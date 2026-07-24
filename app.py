@@ -273,47 +273,74 @@ with st.container():
         st.markdown("</div>", unsafe_allow_html=True)
 
     # ---------------------------------------------------------
-    # NIVEL 4: LA CASA TERMINADA (PerteneSer y JSON)
+    # NIVEL 4: LA CASA TERMINADA (Mentoría y Documentos)
     # ---------------------------------------------------------
     elif st.session_state.nivel == 4:
-        st.markdown("<div class='stage-container'><div class='house-graphic'>🏠✨</div>", unsafe_allow_html=True)
-        st.markdown("""
-        <div class='narrative-box' style='border-left-color: #10B981; color: #065F46; background: #D1FAE5;'>
-            <div class='narrative-title' style='color: #065F46;'>¡Misión Cumplida! Estás a un paso de las Llaves</div>
-            En nuestro programa <b>PerteneSer</b> creemos que el acompañamiento es fundamental. Hemos analizado tu perfil con Inteligencia Artificial. Aquí está tu lista exacta y personalizada de documentos para que no hagas filas innecesarias en la radicación.
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Mochila de Requisitos Personalizada
-        st.markdown("### 🎒 Tu Mochila de Radicación Digital")
-        st.info("Marca las casillas a medida que recolectes tus documentos físicamente.")
-        
-        tipo_trab = st.session_state.lead['afiliacion_colsubsidio']['tipo_cotizante']
-        cabeza_h = st.session_state.lead['condiciones_especiales_ley']['cabeza_de_hogar']
-        
-        st.checkbox("📝 **Formulario de inscripción:** Firmado por todos los mayores de edad.")
-        st.checkbox("🪪 **Documentos de Identidad:** Fotocopia legible de las cédulas.")
-        
-        txt_estado = "📄 **Formato de declaración de estado civil:**"
-        if cabeza_h: txt_estado += " Como indicaste ser cabeza de familia, asegúrate de marcar esta condición en el formato."
-        st.checkbox(txt_estado)
-        
-        st.markdown(f"<br>**Soporte de Ingresos (Perfil: {tipo_trab})**", unsafe_allow_html=True)
-        if tipo_trab == "Dependiente":
-            st.checkbox("💼 **Certificación Laboral:** Original o digital, vigencia no mayor a 60 días.")
-        elif tipo_trab == "Independiente":
-            st.checkbox("🧾 **Certificación de Contador Público:** Incluyendo ingresos promedio.")
-            st.checkbox("📎 **Anexos del Contador:** Fotocopia de cédula, tarjeta profesional y antecedentes disciplinarios.")
-        elif tipo_trab == "Pensionado":
-            st.checkbox("📜 **Desprendible de pago:** Último pago emitido por la entidad pensional.")
+        # Lógica rápida para determinar la ruta (En producción esto lo decide el API)
+        tiene_credito = st.session_state.lead['datos_financieros_declarados']['tiene_credito']
+        ahorros_totales = st.session_state.lead['datos_financieros_declarados']['cesantias_inmovilizadas'] + st.session_state.lead['datos_financieros_declarados']['ahorro_programado']
+        cierre_viable = tiene_credito and ahorros_totales > 0
+
+        if cierre_viable:
+            # --- RUTA 1: CIERRE FINANCIERO VIABLE (ENTREGA DE DOCUMENTOS) ---
+            st.markdown("<div class='stage-container'><div class='house-graphic'>🏠✨</div>", unsafe_allow_html=True)
+            st.markdown("""
+            <div class='narrative-box' style='border-left-color: #10B981; color: #065F46; background: #D1FAE5;'>
+                <div class='narrative-title' style='color: #065F46;'>¡Misión Cumplida! Estás a un paso de las Llaves</div>
+                Tu perfil financiero es sólido. Hemos preparado tu <b>Mochila de Radicación</b> con los documentos exactos que necesitas llenar. Descárgalos aquí mismo y no hagas filas innecesarias.
+            </div>
+            """, unsafe_allow_html=True)
             
-        if st.session_state.lead['datos_financieros_declarados']['tiene_credito']:
-            st.markdown("<br>**Respaldo Financiero**", unsafe_allow_html=True)
-            st.checkbox("🏦 **Carta de Aprobación de Crédito:** Con fecha de expedición no superior a 90 días.")
+            st.markdown("### 📥 Descarga tus Documentos Oficiales")
             
+            c1, c2 = st.columns(2)
+            with c1:
+                st.link_button("📝 Descargar Formulario de Postulación", "https://www.colsubsidio.com/hubfs/documentos/colsubsidio/formulario-postulacion-subsidio-vivienda-colsubsidio-radicacion-digital.pdf", use_container_width=True)
+            with c2:
+                if st.session_state.lead['condiciones_especiales_ley']['cabeza_de_hogar']:
+                    st.link_button("📄 Formato de Estado Civil (Cabeza de Hogar)", "https://www.colsubsidio.com/hubfs/documentos/colsubsidio/formato-declaracion-de-estado-civil-y-condicion-especial-sfv.pdf", use_container_width=True)
+            
+            st.info("💡 **Tip de radicación:** Recuerda anexar las fotocopias legibles de las cédulas y tu carta de aprobación de crédito (vigencia no mayor a 90 días).")
+
+        else:
+            # --- RUTA 2: MENTORÍA Y ACOMPAÑAMIENTO (PERTENESER) ---
+            st.markdown("<div class='stage-container'><div class='house-graphic'>🌱🏗️</div>", unsafe_allow_html=True)
+            st.markdown("""
+            <div class='narrative-box' style='border-left-color: #F59E0B; color: #92400E; background: #FEF3C7;'>
+                <div class='narrative-title' style='color: #92400E;'>¡Tu sueño está en construcción!</div>
+                Notamos que aún necesitas fortalecer tu escudo financiero (crédito y ahorros) para alcanzar la meta. En Colsubsidio nunca te dejamos solo. Te damos la bienvenida a nuestro programa de acompañamiento <b>PerteneSER</b>. Aquí tienes tu plan de acción:
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("### 🗺️ Tu Plan de Entrenamiento Financiero")
+            
+            col_m1, col_m2 = st.columns(2)
+            with col_m1:
+                st.markdown("""
+                <div style='background: white; padding: 20px; border-radius: 12px; border: 2px solid #FCD34D; height: 100%;'>
+                    <h4 style='color: #D97706; margin-top: 0;'>1. Subsidio de Arrendamiento</h4>
+                    <p>Mientras ahorras para tu cuota inicial, postúlate para recibir <b>0.6 SMMLV mensuales durante 24 meses</b> para el pago de tu arriendo actual.</p>
+                </div>
+                """, unsafe_allow_html=True)
+            with col_m2:
+                st.markdown("""
+                <div style='background: white; padding: 20px; border-radius: 12px; border: 2px solid #60A5FA; height: 100%;'>
+                    <h4 style='color: #2563EB; margin-top: 0;'>2. Gestión de Cesantías</h4>
+                    <p>Las cesantías inmovilizadas suman muchos puntos. Te asesoramos para trasladarlas y bloquearlas exclusivamente para la compra de tu futura vivienda.</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.write("")
+            st.button("🎯 Agendar Asesoría Gratuita PerteneSER", type="primary", use_container_width=True)
+
         st.divider()
-        with st.expander("💻 Inspeccionar JSON Final (Envío a Motor de Reglas API)", expanded=False):
+        with st.expander("💻 Ver JSON Generado para el Motor (Auditoría Jurados)", expanded=False):
             st.json(st.session_state.lead)
+            
+        if st.button("🔄 Volver a Empezar el Camino", use_container_width=True):
+            st.session_state.clear()
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
             
         if st.button("🔄 Reiniciar la Aventura", use_container_width=True):
             st.session_state.clear()
