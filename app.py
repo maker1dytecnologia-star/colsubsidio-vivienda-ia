@@ -2,52 +2,69 @@ import streamlit as st
 import time
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Mi Camino VIS", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Colsubsidio - Mi Camino VIS", layout="wide", initial_sidebar_state="expanded")
 
-# --- CSS EXTREMADAMENTE VISUAL (Roadmap y Construcción) ---
+# --- CSS EXTREMADAMENTE VISUAL (Fondo Animado y Layout) ---
 st.markdown("""
 <style>
-    .stApp { background-color: #F8FAFC; }
+    /* Fondo Animado con CSS Puro (Gradiente en movimiento + Patrón sutil) */
+    .stApp { 
+        background: linear-gradient(-45deg, #F0F4F8, #E2E8F0, #F8FAFC, #EEF2FF);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        background-image: radial-gradient(rgba(0, 45, 114, 0.05) 1px, transparent 1px);
+        background-size: 20px 20px;
+    }
     
-    /* Título principal */
-    .game-header { background: #002D72; padding: 20px; color: white; text-align: center; border-radius: 0 0 20px 20px; margin-top: -60px; margin-bottom: 20px; }
-    .game-header h1 { color: #FFCD00 !important; font-weight: 900; }
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    /* Cabecera Inmersiva (Hero) */
+    .game-header { background: #002D72; padding: 30px; color: white; text-align: center; border-radius: 0 0 30px 30px; margin-top: -60px; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border-bottom: 5px solid #FFCD00; }
+    .game-header h1 { color: #FFCD00 !important; font-weight: 900; font-size: 2.8rem; letter-spacing: -1px; }
 
-    /* Mapa del Camino (Visual Roadmap) */
-    .roadmap-container { display: flex; justify-content: space-between; align-items: center; position: relative; margin: 30px 0 50px 0; padding: 0 20px; }
+    /* Mapa del Camino (Visual Roadmap Ampliado) */
+    .roadmap-container { display: flex; justify-content: space-between; align-items: center; position: relative; margin: 20px auto 50px auto; padding: 0 5%; max-width: 1000px; }
     .roadmap-step { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 2; width: 20%; }
-    .roadmap-icon { font-size: 2.5rem; background: white; border: 5px solid #E2E8F0; border-radius: 50%; width: 70px; height: 70px; display: flex; justify-content: center; align-items: center; z-index: 2; transition: all 0.3s; }
-    .step-active .roadmap-icon { border-color: #FFCD00; background: #FEF3C7; transform: scale(1.15); box-shadow: 0 0 15px rgba(255, 205, 0, 0.5); }
+    .roadmap-icon { font-size: 2.5rem; background: white; border: 5px solid #E2E8F0; border-radius: 50%; width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; z-index: 2; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .step-active .roadmap-icon { border-color: #FFCD00; background: #FEF3C7; transform: scale(1.2); box-shadow: 0 0 20px rgba(255, 205, 0, 0.6); }
     .step-done .roadmap-icon { border-color: #10B981; background: #D1FAE5; }
-    .step-label { font-weight: bold; margin-top: 10px; color: #64748B; font-size: 0.9rem; text-align: center; }
-    .step-active .step-label { color: #002D72; font-size: 1rem; }
+    .step-label { font-weight: bold; margin-top: 15px; color: #64748B; font-size: 1rem; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
+    .step-active .step-label { color: #002D72; font-size: 1.1rem; }
     
     /* Línea conectora del mapa */
-    .roadmap-line { position: absolute; top: 35px; left: 10%; right: 10%; height: 5px; background: #E2E8F0; z-index: 1; }
+    .roadmap-line { position: absolute; top: 40px; left: 10%; right: 10%; height: 6px; background: #E2E8F0; z-index: 1; border-radius: 3px; }
     
-    /* Escenario Central (Donde se construye la casa) */
-    .stage-container { background: white; border-radius: 20px; padding: 40px 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 30px; border: 2px solid #F1F5F9; }
-    .house-graphic { font-size: 100px; line-height: 1; margin-bottom: 20px; text-shadow: 0 10px 20px rgba(0,0,0,0.1); animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    /* Escenario Central (Zona de Construcción) */
+    .stage-container { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 25px; padding: 50px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.1); margin: 0 auto 40px auto; border: 1px solid rgba(255,255,255,0.5); max-width: 900px; }
+    .house-graphic { font-size: 120px; line-height: 1; margin-bottom: 30px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15)); animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
     
-    /* Narrativa de Mentoría */
-    .narrative-box { background: #EEF2FF; border-left: 6px solid #4F46E5; padding: 20px 30px; border-radius: 10px; text-align: left; margin: 0 auto 30px auto; max-width: 800px; font-size: 1.15rem; color: #1E293B; line-height: 1.6; }
-    .narrative-title { font-weight: 900; color: #4F46E5; margin-bottom: 10px; font-size: 1.3rem; }
+    /* Narrativa de Mentoría (Burbuja amplia) */
+    .narrative-box { background: #F8FAFC; border-left: 8px solid #4F46E5; padding: 25px 35px; border-radius: 0 15px 15px 0; text-align: left; margin: 0 auto 40px auto; font-size: 1.2rem; color: #334155; line-height: 1.7; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+    .narrative-title { font-weight: 900; color: #4F46E5; margin-bottom: 15px; font-size: 1.4rem; text-transform: uppercase; letter-spacing: 0.5px; }
     
-    /* Ocultar UI aburrida */
+    /* Ocultar UI estándar y mejorar botones */
     .stSlider > label, .stNumberInput > label, .stRadio > label, .stSelectbox > label { display: none; }
-    div.row-widget.stRadio > div { flex-direction: row; flex-wrap: wrap; gap: 10px; justify-content: center; }
-    div.row-widget.stRadio > div > label { background: #F1F5F9; padding: 15px 25px; border-radius: 12px; border: 2px solid transparent; cursor: pointer; }
+    div.row-widget.stRadio > div { flex-direction: row; flex-wrap: wrap; gap: 15px; justify-content: center; }
+    div.row-widget.stRadio > div > label { background: white; padding: 15px 30px; border-radius: 50px; border: 2px solid #E2E8F0; cursor: pointer; transition: all 0.2s; font-weight: bold; color: #475569; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    div.row-widget.stRadio > div > label:hover { border-color: #002D72; background: #F0F4F8; transform: translateY(-2px); }
     
-    /* Animación */
+    /* Sidebar Styling */
+    [data-testid="stSidebar"] { background-color: #FFFFFF; border-right: 2px solid #F1F5F9; }
+    
+    /* Animaciones */
     @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 </style>
 """, unsafe_allow_html=True)
 
-# --- INICIALIZACIÓN DE JSON BLINDADO (Evita KeyError) ---
+# --- INICIALIZACIÓN DE JSON BLINDADO ---
 def get_empty_lead():
     return {
         "datos_personales": {"numero_documento": "", "nombres": "", "edad": 30},
-        "afiliacion_colsubsidio": {"es_afiliado": False, "personas_a_cargo_registradas": 0},
+        "afiliacion_colsubsidio": {"es_afiliado": False, "personas_a_cargo_registradas": 0, "tipo_cotizante": "Dependiente"},
         "datos_financieros_declarados": {"ingresos_mensuales_hogar": 0, "cesantias_inmovilizadas": 0, "ahorro_programado": 0, "tiene_credito": False},
         "preferencias_e_intencion": {"zona_interes": "Soacha", "plazo_compra": "Corto plazo"},
         "informacion_socioeconomica_externa": {"grupo_sisben": "N/A", "tiene_propiedades_snr": 0, "tiene_subsidios_previos": False},
@@ -59,15 +76,45 @@ if 'lead' not in st.session_state: st.session_state.lead = get_empty_lead()
 
 # --- MOCK API ---
 def api_get_afiliado(cedula):
-    db = {"1018300400": {"nombres": "Diana Carolina", "ingresos": 2800000, "personas_cargo": 2}}
-    time.sleep(0.5)
+    db = {"1018300400": {"nombres": "Diana Carolina", "ingresos": 2800000, "personas_cargo": 2, "tipo_cotizante": "Dependiente"}}
+    time.sleep(0.8)
     return db.get(cedula, None)
+
+# --- PANEL LATERAL (INVENTARIO Y PROGRESO) ---
+with st.sidebar:
+    st.markdown("<h2 style='color: #002D72; text-align: center; margin-bottom: 30px;'>🎒 Tu Mochila VIS</h2>", unsafe_allow_html=True)
+    st.progress(st.session_state.nivel / 4)
+    st.caption(f"Progreso: Nivel {st.session_state.nivel} de 4")
+    st.divider()
+    
+    if st.session_state.nivel > 0:
+        afil = "✅ Afiliado" if st.session_state.lead['afiliacion_colsubsidio']['es_afiliado'] else "❌ No Afiliado"
+        st.markdown(f"**Identidad:**<br>{afil}", unsafe_allow_html=True)
+        st.write("")
+        
+    if st.session_state.nivel > 1:
+        zona = st.session_state.lead['preferencias_e_intencion']['zona_interes']
+        st.markdown(f"**Destino Elegido:**<br>📍 {zona}", unsafe_allow_html=True)
+        st.write("")
+        
+    if st.session_state.nivel > 2:
+        oro = st.session_state.lead['datos_financieros_declarados']['cesantias_inmovilizadas'] + st.session_state.lead['datos_financieros_declarados']['ahorro_programado']
+        st.markdown(f"**Cofre de Ahorros:**<br>💰 ${oro:,.0f}", unsafe_allow_html=True)
+        st.write("")
+        
+    if st.session_state.nivel > 3:
+        pts = sum(st.session_state.lead['condiciones_especiales_ley'].values())
+        sisb = st.session_state.lead['informacion_socioeconomica_externa']['grupo_sisben']
+        st.markdown(f"**Poderes Legales:**<br>⚡ {pts} Condición(es)<br>📜 Sisbén: {sisb}", unsafe_allow_html=True)
+        
+        if st.session_state.lead['informacion_socioeconomica_externa']['tiene_propiedades_snr'] > 0:
+            st.error("⚠️ Alerta: Ya posee propiedades")
 
 # --- CABECERA ---
 st.markdown("<div class='game-header'><h1>🏠 El Camino hacia tu Casa Propia</h1></div>", unsafe_allow_html=True)
 
 # --- RENDERIZADO DEL MAPA (ROADMAP VISUAL) ---
-etapas = [("🔐", "Identidad"), ("📐", "Planos"), ("🧱", "Cimientos"), ("🏗️", "Estructura"), ("🏠", "La Llave")]
+etapas = [("🔐", "Identidad"), ("📐", "Planos"), ("🧱", "Cimientos"), ("🏗️", "Estructura"), ("🔑", "La Llave")]
 mapa_html = '<div class="roadmap-container"><div class="roadmap-line"></div>'
 for i, (icono, nombre) in enumerate(etapas):
     clase = "step-active" if i == st.session_state.nivel else ("step-done" if i < st.session_state.nivel else "")
@@ -75,7 +122,7 @@ for i, (icono, nombre) in enumerate(etapas):
 mapa_html += '</div>'
 st.markdown(mapa_html, unsafe_allow_html=True)
 
-# --- ÁREA CENTRAL DE JUEGO ---
+# --- ÁREA CENTRAL DE JUEGO (ZONA DE CONSTRUCCIÓN) ---
 with st.container():
     # ---------------------------------------------------------
     # NIVEL 0: EL TERRENO (Identificación)
@@ -91,7 +138,8 @@ with st.container():
         
         c1, c2, c3 = st.columns([1,2,1])
         with c2:
-            cedula = st.text_input("Documento", placeholder="Escribe aquí tu número de cédula...")
+            cedula = st.text_input("Documento", placeholder="Escribe aquí tu número de cédula...", key="input_cedula")
+            st.write("")
             if st.button("🔍 Iniciar Exploración", type="primary", use_container_width=True):
                 if cedula:
                     st.session_state.lead = get_empty_lead() # Reiniciamos limpio
@@ -102,12 +150,15 @@ with st.container():
                         st.session_state.lead['datos_personales']['nombres'] = datos['nombres']
                         st.session_state.lead['datos_financieros_declarados']['ingresos_mensuales_hogar'] = datos['ingresos']
                         st.session_state.lead['afiliacion_colsubsidio']['personas_a_cargo_registradas'] = datos['personas_cargo']
+                        st.session_state.lead['afiliacion_colsubsidio']['tipo_cotizante'] = datos['tipo_cotizante']
                     st.session_state.nivel = 1
                     st.rerun()
+                else:
+                    st.warning("Debes ingresar un documento para iniciar.")
         st.markdown("</div>", unsafe_allow_html=True)
 
     # ---------------------------------------------------------
-    # NIVEL 1: LOS PLANOS (Nombre, Edad, Zona)
+    # NIVEL 1: LOS PLANOS (Nombre, Edad, Ocupación, Zona)
     # ---------------------------------------------------------
     elif st.session_state.nivel == 1:
         st.markdown("<div class='stage-container'><div class='house-graphic'>📐</div>", unsafe_allow_html=True)
@@ -115,29 +166,35 @@ with st.container():
         afiliado = st.session_state.lead['afiliacion_colsubsidio']['es_afiliado']
         nombre_mostrar = st.session_state.lead['datos_personales']['nombres']
         
-        mensaje = f"¡Qué alegría verte, {nombre_mostrar}! El sistema me chismeó que eres afiliado y ya guardé tus ingresos, así que nos saltamos esa parte aburrida." if afiliado else "¡Gusto en conocerte! Como eres nuevo por aquí, necesito hacerte un par de preguntas básicas para arrancar."
+        mensaje = f"¡Qué alegría verte, {nombre_mostrar}! El sistema me chismeó que eres afiliado y ya guardé tus ingresos, así que nos saltamos esa parte." if afiliado else "¡Gusto en conocerte! Como eres nuevo por aquí, necesito hacerte un par de preguntas básicas para arrancar."
         
         st.markdown(f"""
         <div class='narrative-box'>
             <div class='narrative-title'>Paso 2: Dibujando los Planos</div>
-            {mensaje} Ahora vamos a dibujar los planos de tu vida. Necesito saber <b>dónde</b> quieres vivir y <b>tu edad</b>. ¿Por qué la edad? Porque existen subsidios especiales y bonos extra para el segmento "Joven". ¡Queremos aprovechar todo lo que la ley nos dé!
+            {mensaje} Ahora vamos a dibujar los planos de tu vida. Necesito saber <b>dónde</b> quieres vivir y <b>tu edad</b>. ¿Por qué la edad? Porque existen bonos extra para el segmento "Joven" que no podemos desaprovechar.
         </div>
         """, unsafe_allow_html=True)
         
         if not afiliado:
-            st.session_state.lead['datos_personales']['nombres'] = st.text_input("¿Cómo te llamas?", placeholder="Tu nombre...")
+            c1, c2 = st.columns(2)
+            st.markdown("<br>**¿Cómo te llamas?**", unsafe_allow_html=True)
+            st.session_state.lead['datos_personales']['nombres'] = st.text_input("Nombre", placeholder="Tu nombre...")
             
-            # --- SOLUCIÓN: Agregamos el texto explicativo para el input oculto ---
             st.markdown("<br>**¿Cuáles son tus ingresos mensuales aproximados? (COP)**", unsafe_allow_html=True)
-            st.session_state.lead['datos_financieros_declarados']['ingresos_mensuales_hogar'] = st.number_input("Ingresos", step=100000)
+            st.session_state.lead['datos_financieros_declarados']['ingresos_mensuales_hogar'] = st.number_input("Ingresos", step=100000, value=1300000)
+            
+            st.markdown("<br>**¿A qué te dedicas actualmente? (Nos ayuda a organizar tus trámites)**", unsafe_allow_html=True)
+            tipo = st.radio("Ocupación", ["Dependiente (Empleado) 🏢", "Independiente 💼", "Pensionado 👴"])
+            st.session_state.lead['afiliacion_colsubsidio']['tipo_cotizante'] = tipo.split(" ")[0]
             
         st.markdown("<br>**1. Desliza para indicar tu edad actual:**", unsafe_allow_html=True)
         edad = st.slider("Edad", 18, 80, 30)
         
-        st.markdown("**2. ¿En qué zona de Cundinamarca imaginas tu hogar?**")
+        st.markdown("<br>**2. ¿En qué zona de Cundinamarca imaginas tu hogar?**", unsafe_allow_html=True)
         zona = st.radio("Zona", ["Soacha", "Bogotá", "Tocancipá", "Girardot"])
         
-        if st.button("✅ Aprobar Planos", type="primary"):
+        st.write("")
+        if st.button("✅ Aprobar Planos", type="primary", use_container_width=True):
             st.session_state.lead['datos_personales']['edad'] = edad
             st.session_state.lead['preferencias_e_intencion']['zona_interes'] = zona
             st.session_state.nivel = 2
@@ -152,7 +209,7 @@ with st.container():
         st.markdown("""
         <div class='narrative-box'>
             <div class='narrative-title'>Paso 3: Vertiendo los Cimientos</div>
-            Para que una casa no se caiga, necesita cimientos financieros sólidos. En el mundo real, estos cimientos son <b>tus ahorros y cesantías</b>. Sumaremos todo tu esfuerzo acumulado para calcular si alcanzas a cubrir la cuota inicial del proyecto que dibujamos en los planos.
+            Para que una casa resista el tiempo, necesita cimientos financieros sólidos. En el mundo real, estos cimientos son <b>tus ahorros y cesantías</b>. Sumaremos tu esfuerzo acumulado para calcular si alcanzas a cubrir la cuota inicial del proyecto.
         </div>
         """, unsafe_allow_html=True)
         
@@ -161,10 +218,12 @@ with st.container():
             st.markdown("**¿Cuántas Cesantías inmovilizadas tienes? (COP)**")
             cesantias = st.number_input("Cesantías", min_value=0, step=500000, value=2000000)
         with c2:
-            st.markdown("**¿Cuánto tienes en ahorros propios? (COP)**")
+            st.markdown("**¿Cuánto tienes en ahorros voluntarios? (COP)**")
             ahorros = st.number_input("Ahorros", min_value=0, step=500000, value=3000000)
             
-        if st.button("💪 Cimientos Listos", type="primary"):
+        st.write("")
+        st.write("")
+        if st.button("💪 Cimientos Listos", type="primary", use_container_width=True):
             st.session_state.lead['datos_financieros_declarados']['cesantias_inmovilizadas'] = cesantias
             st.session_state.lead['datos_financieros_declarados']['ahorro_programado'] = ahorros
             st.session_state.nivel = 3
@@ -179,7 +238,7 @@ with st.container():
         st.markdown("""
         <div class='narrative-box'>
             <div class='narrative-title'>Paso 4: Levantando la Estructura</div>
-            Las paredes y la estructura existen para proteger a los que más quieres. Aquí evaluamos a tu núcleo familiar. Además, ¡tenemos que esquivar un par de rocas gigantes! 🪨 La Ley de Vivienda nos exige validar que nadie en tu hogar tenga propiedades ni subsidios previos para poder darte luz verde.
+            Aquí evaluamos a tu núcleo familiar. Además, ¡tenemos que esquivar rocas legales! 🪨 La Ley nos exige validar que nadie en tu hogar tenga propiedades ni subsidios previos.
         </div>
         """, unsafe_allow_html=True)
         
@@ -193,18 +252,20 @@ with st.container():
         sisben = st.radio("Sisbén", ["No tengo", "A1-A5", "B1-B7", "C1-C18", "D1-D21"])
         
         st.markdown("<br>**🪨 Obstáculos Legales (Responde con honestidad):**", unsafe_allow_html=True)
-        col1, col2 = st.columns(2)
-        sub_previo = col1.toggle("🚫 Ya recibimos un subsidio de vivienda antes")
-        propiedades = col2.toggle("🚫 Alguien en casa ya tiene una propiedad a su nombre")
+        col1, col2, col3 = st.columns(3)
+        cred_aprobado = col1.toggle("💳 Ya tengo crédito pre-aprobado")
+        sub_previo = col2.toggle("🚫 Recibí un subsidio antes")
+        propiedades = col3.toggle("🚫 Ya tengo casa a mi nombre")
         
-        if st.button("🔨 Ensamblar Estructura", type="primary"):
-            # Asignaciones seguras al diccionario pre-inicializado
+        st.write("")
+        if st.button("🔨 Ensamblar Estructura", type="primary", use_container_width=True):
             st.session_state.lead['condiciones_especiales_ley']['cabeza_de_hogar'] = cabeza
             st.session_state.lead['condiciones_especiales_ley']['discapacidad'] = discapacidad
             st.session_state.lead['condiciones_especiales_ley']['mayor_65'] = mayor
             st.session_state.lead['informacion_socioeconomica_externa']['grupo_sisben'] = sisben.split("-")[0] if "-" in sisben else sisben
             st.session_state.lead['informacion_socioeconomica_externa']['tiene_subsidios_previos'] = sub_previo
             st.session_state.lead['informacion_socioeconomica_externa']['tiene_propiedades_snr'] = 1 if propiedades else 0
+            st.session_state.lead['datos_financieros_declarados']['tiene_credito'] = cred_aprobado
             
             st.session_state.nivel = 4
             st.balloons()
@@ -212,21 +273,49 @@ with st.container():
         st.markdown("</div>", unsafe_allow_html=True)
 
     # ---------------------------------------------------------
-    # NIVEL 4: LA CASA TERMINADA (Consola Final)
+    # NIVEL 4: LA CASA TERMINADA (PerteneSer y JSON)
     # ---------------------------------------------------------
     elif st.session_state.nivel == 4:
-        st.markdown("<div class='stage-container'><div class='house-graphic'>🏠</div>", unsafe_allow_html=True)
+        st.markdown("<div class='stage-container'><div class='house-graphic'>🏠✨</div>", unsafe_allow_html=True)
         st.markdown("""
         <div class='narrative-box' style='border-left-color: #10B981; color: #065F46; background: #D1FAE5;'>
-            <div class='narrative-title' style='color: #065F46;'>¡Misión Cumplida! Te entregamos las Llaves</div>
-            Hemos recolectado con éxito toda la información. Ahora, el cerebro de Inteligencia Artificial tomará estos planos, cimientos y estructura (JSON) y los cruzará con los compradores históricos para entregarte el Score y el Proyecto perfecto.
+            <div class='narrative-title' style='color: #065F46;'>¡Misión Cumplida! Estás a un paso de las Llaves</div>
+            En nuestro programa <b>PerteneSer</b> creemos que el acompañamiento es fundamental. Hemos analizado tu perfil con Inteligencia Artificial. Aquí está tu lista exacta y personalizada de documentos para que no hagas filas innecesarias en la radicación.
         </div>
         """, unsafe_allow_html=True)
         
-        with st.expander("📦 Inspeccionar Datos Recolectados (Payload API JSON)", expanded=False):
+        # Mochila de Requisitos Personalizada
+        st.markdown("### 🎒 Tu Mochila de Radicación Digital")
+        st.info("Marca las casillas a medida que recolectes tus documentos físicamente.")
+        
+        tipo_trab = st.session_state.lead['afiliacion_colsubsidio']['tipo_cotizante']
+        cabeza_h = st.session_state.lead['condiciones_especiales_ley']['cabeza_de_hogar']
+        
+        st.checkbox("📝 **Formulario de inscripción:** Firmado por todos los mayores de edad.")
+        st.checkbox("🪪 **Documentos de Identidad:** Fotocopia legible de las cédulas.")
+        
+        txt_estado = "📄 **Formato de declaración de estado civil:**"
+        if cabeza_h: txt_estado += " Como indicaste ser cabeza de familia, asegúrate de marcar esta condición en el formato."
+        st.checkbox(txt_estado)
+        
+        st.markdown(f"<br>**Soporte de Ingresos (Perfil: {tipo_trab})**", unsafe_allow_html=True)
+        if tipo_trab == "Dependiente":
+            st.checkbox("💼 **Certificación Laboral:** Original o digital, vigencia no mayor a 60 días.")
+        elif tipo_trab == "Independiente":
+            st.checkbox("🧾 **Certificación de Contador Público:** Incluyendo ingresos promedio.")
+            st.checkbox("📎 **Anexos del Contador:** Fotocopia de cédula, tarjeta profesional y antecedentes disciplinarios.")
+        elif tipo_trab == "Pensionado":
+            st.checkbox("📜 **Desprendible de pago:** Último pago emitido por la entidad pensional.")
+            
+        if st.session_state.lead['datos_financieros_declarados']['tiene_credito']:
+            st.markdown("<br>**Respaldo Financiero**", unsafe_allow_html=True)
+            st.checkbox("🏦 **Carta de Aprobación de Crédito:** Con fecha de expedición no superior a 90 días.")
+            
+        st.divider()
+        with st.expander("💻 Inspeccionar JSON Final (Envío a Motor de Reglas API)", expanded=False):
             st.json(st.session_state.lead)
             
-        if st.button("🔄 Volver a Empezar el Camino"):
+        if st.button("🔄 Reiniciar la Aventura", use_container_width=True):
             st.session_state.clear()
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
