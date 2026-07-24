@@ -5,79 +5,93 @@ import json
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Colsubsidio - Asesor Digital VIS", layout="wide", initial_sidebar_state="expanded")
 
-# --- CSS PROFESIONAL Y CORPORATIVO (FONDO BLANCO ELEGANTE) ---
+# --- CSS PROFESIONAL CON JUEGO DE COLORES CORPORATIVOS ---
 st.markdown("""
 <style>
-    /* Fondo general limpio y profesional */
+    /* Fondo con gradiente corporativo vivo y patrón geométrico sutil */
     .stApp { 
-        background-color: #f8fafc;
-        background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
-        background-size: 24px 24px;
+        background: linear-gradient(135deg, #f0f7ff 0%, #f8fafc 50%, #fffbeb 100%);
+        background-attachment: fixed;
     }
     
+    .stApp::before {
+        content: "";
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-image: radial-gradient(rgba(0, 103, 177, 0.05) 2px, transparent 2px), radial-gradient(rgba(255, 208, 0, 0.05) 2px, transparent 2px);
+        background-size: 32px 32px;
+        background-position: 0 0, 16px 16px;
+        z-index: 0;
+        pointer-events: none;
+    }
+
     /* Cabecera Corporativa Inmersiva */
     .game-header { 
         background: linear-gradient(135deg, #0067b1 0%, #004d85 100%); 
         padding: 35px; 
         color: white; 
         text-align: center; 
-        border-radius: 0 0 30px 30px; 
+        border-radius: 0 0 35px 35px; 
         margin-top: -60px; 
         margin-bottom: 30px; 
-        box-shadow: 0 10px 25px rgba(0, 103, 177, 0.15); 
-        border-bottom: 5px solid #ffd000; 
+        box-shadow: 0 10px 30px rgba(0, 103, 177, 0.2); 
+        border-bottom: 6px solid #ffd000; 
+        position: relative;
+        z-index: 1;
     }
-    .game-header h1 { color: #ffd000 !important; font-weight: 900; font-size: 2.6rem; letter-spacing: -0.5px; }
+    .game-header h1 { color: #ffd000 !important; font-weight: 900; font-size: 2.8rem; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-    /* Roadmap Visual (Progreso en el Camino) */
-    .roadmap-container { display: flex; justify-content: space-between; align-items: center; position: relative; margin: 20px auto 40px auto; padding: 0 5%; max-width: 900px; }
+    /* Roadmap Visual */
+    .roadmap-container { display: flex; justify-content: space-between; align-items: center; position: relative; margin: 20px auto 50px auto; padding: 0 5%; max-width: 1000px; z-index: 1; }
     .roadmap-step { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 2; width: 20%; }
-    .roadmap-icon { font-size: 2rem; background: #ffffff; border: 4px solid #cbd5e1; border-radius: 50%; width: 70px; height: 70px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.04); transition: all 0.3s ease; }
-    .step-active .roadmap-icon { border-color: #ffd000; background: #fffbeb; transform: scale(1.12); box-shadow: 0 0 15px rgba(255, 208, 0, 0.4); }
+    .roadmap-icon { font-size: 2.2rem; background: #ffffff; border: 4px solid #cbd5e1; border-radius: 50%; width: 75px; height: 75px; display: flex; justify-content: center; align-items: center; z-index: 2; transition: all 0.4s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .step-active .roadmap-icon { border-color: #ffd000; background: #fffbeb; transform: scale(1.15); box-shadow: 0 0 20px rgba(255, 208, 0, 0.5); }
     .step-done .roadmap-icon { border-color: #10b981; background: #d1fae5; color: #065f46; }
-    .step-label { font-weight: 700; margin-top: 10px; color: #575756; font-size: 0.85rem; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
-    .step-active .step-label { color: #0067b1; font-size: 0.95rem; }
-    .roadmap-line { position: absolute; top: 34px; left: 10%; right: 10%; height: 4px; background: #cbd5e1; z-index: 1; border-radius: 2px; }
+    .step-label { font-weight: 700; margin-top: 12px; color: #575756; font-size: 0.9rem; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
+    .step-active .step-label { color: #0067b1; font-size: 1rem; }
+    .roadmap-line { position: absolute; top: 37px; left: 10%; right: 10%; height: 5px; background: #cbd5e1; z-index: 1; border-radius: 3px; }
     
-    /* Contenedor Principal (Tarjeta Estilo Corporativo) */
+    /* Contenedor Principal (Tarjetas de Etapa) */
     .stage-container { 
-        background: #ffffff; 
-        border-radius: 24px; 
+        background: rgba(255, 255, 255, 0.95); 
+        backdrop-filter: blur(10px); 
+        border-radius: 25px; 
         padding: 45px; 
         text-align: center; 
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06); 
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); 
         margin: 0 auto 40px auto; 
-        max-width: 850px; 
-        border: 1px solid #e2e8f0; 
+        border: 2px solid rgba(0, 103, 177, 0.1); 
+        max-width: 900px; 
+        position: relative; 
+        z-index: 1; 
     }
-    .house-graphic { font-size: 100px; line-height: 1; margin-bottom: 25px; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.08)); }
+    .house-graphic { font-size: 110px; line-height: 1; margin-bottom: 25px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1)); }
     
-    /* Caja de Mentoría / Narrativa */
+    /* Caja de Narrativa */
     .narrative-box { 
         background: #f0f7ff; 
-        border-left: 6px solid #0067b1; 
-        padding: 22px 30px; 
-        border-radius: 0 14px 14px 0; 
+        border-left: 8px solid #0067b1; 
+        padding: 25px 30px; 
+        border-radius: 0 16px 16px 0; 
         text-align: left; 
-        margin: 0 auto 30px auto; 
-        font-size: 1.1rem; 
+        margin: 0 auto 35px auto; 
+        font-size: 1.15rem; 
         color: #575756; 
-        line-height: 1.6; 
+        line-height: 1.7; 
         box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);
     }
-    .narrative-title { font-weight: 800; color: #0067b1; margin-bottom: 8px; font-size: 1.25rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .narrative-title { font-weight: 900; color: #0067b1; margin-bottom: 12px; font-size: 1.35rem; text-transform: uppercase; letter-spacing: 0.5px; }
     
-    /* Botones y Radio Buttons Profesionales */
-    .stButton > button { background-color: #0067b1 !important; color: white !important; font-weight: 700; border-radius: 12px; border: none; padding: 0.6rem 1.5rem; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0, 103, 177, 0.2); }
-    .stButton > button:hover { background-color: #004d85 !important; transform: translateY(-1px); box-shadow: 0 6px 12px rgba(0, 103, 177, 0.3); }
+    /* Botones Interactivos Corporativos */
+    .stButton > button { background-color: #0067b1 !important; color: white !important; font-weight: 800; border-radius: 12px; border: none; padding: 0.6rem 1.5rem; transition: all 0.3s; box-shadow: 0 4px 10px rgba(0, 103, 177, 0.3); }
+    .stButton > button:hover { background-color: #004d85 !important; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0, 103, 177, 0.4); }
     
     .stSlider > label, .stNumberInput > label, .stRadio > label, .stSelectbox > label { display: none; }
     div.row-widget.stRadio > div { flex-direction: row; flex-wrap: wrap; gap: 12px; justify-content: center; }
-    div.row-widget.stRadio > div > label { background: #ffffff; padding: 12px 24px; border-radius: 30px; border: 2px solid #cbd5e1; font-weight: 600; color: #575756; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    div.row-widget.stRadio > div > label { background: white; padding: 12px 25px; border-radius: 30px; border: 2px solid #cbd5e1; font-weight: 700; color: #575756; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
     div.row-widget.stRadio > div > label:hover { border-color: #0067b1; color: #0067b1; background: #f0f7ff; }
     
-    /* Sidebar Estilizado */
-    [data-testid="stSidebar"] { background-color: #ffffff; border-right: 1px solid #e2e8f0; }
+    [data-testid="stSidebar"] { background-color: #ffffff; border-right: 1px solid #cbd5e1; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -159,7 +173,7 @@ with st.sidebar:
         st.markdown(f"**Cofre de Ahorros:**<br>💰 ${oro:,.0f}", unsafe_allow_html=True)
 
 # --- CABECERA ---
-st.markdown("<div class='game-header'><h1>🏠 El Camino hacia tu Casa Propia</h1><p style='color: #f1f5f9; font-size: 1.1rem; margin-top: 5px;'>Asesor Digital Inteligente — Colsubsidio</p></div>", unsafe_allow_html=True)
+st.markdown("<div class='game-header'><h1>🏠 El Camino hacia tu Casa Propia</h1><p style='color: #ffd000; font-size: 1.1rem; margin-top: 5px; font-weight: 600;'>Asesor Digital Inteligente — Colsubsidio</p></div>", unsafe_allow_html=True)
 
 # --- MAPA VISUAL ---
 etapas = [("🔐", "Identidad"), ("📐", "Planos"), ("🧱", "Cimientos"), ("🏗️", "Estructura"), ("🔑", "La Llave")]
@@ -182,7 +196,7 @@ with st.container():
         with c2:
             cedula = st.text_input("Documento", placeholder="Escribe tu cédula (Prueba con 1018300400)...", key="input_cedula")
             st.write("")
-            if st.button("🔍 Consultar Cédula", use_container_width=True):
+            if st.button("🔍 Consultar Cédula", use_container_width=True, key="btn_nivel_0"):
                 if cedula:
                     with st.spinner("Consultando registros..."):
                         datos_api = api_get_afiliado(cedula)
@@ -225,7 +239,7 @@ with st.container():
         zona = st.radio("Zona", ["Soacha", "Bogotá", "Tocancipá", "Girardot"])
         
         st.write("")
-        if st.button("✅ Aprobar Planos", use_container_width=True):
+        if st.button("✅ Aprobar Planos", use_container_width=True, key="btn_nivel_1"):
             st.session_state.lead['edad'] = int(edad)
             st.session_state.lead['zona_preferida'] = str(zona)
             st.session_state.nivel = 2
@@ -242,7 +256,7 @@ with st.container():
         ahorros = c2.number_input("Ahorros (COP):", min_value=0.0, step=500000.0, value=2000000.0)
         
         st.write("")
-        if st.button("💪 Cimientos Listos", use_container_width=True):
+        if st.button("💪 Cimientos Listos", use_container_width=True, key="btn_nivel_2"):
             st.session_state.lead['finanzas']['cesantias'] = float(cesantias)
             st.session_state.lead['finanzas']['ahorros'] = float(ahorros)
             st.session_state.nivel = 3
@@ -259,7 +273,7 @@ with st.container():
         propiedades = st.toggle("🚫 ¿Ya posee propiedad raíz a su nombre?")
         
         st.write("")
-        if st.button("🔨 Finalizar y Evaluar Perfil", use_container_width=True):
+        if st.button("🔨 Finalizar y Evaluar Perfil", use_container_width=True, key="btn_nivel_3"):
             st.session_state.lead['condiciones_especiales']['cabeza_de_hogar'] = bool(cabeza)
             st.session_state.lead['finanzas']['credito_preaprobado'] = bool(cred_aprobado)
             st.session_state.lead['propietario_vivienda'] = bool(propiedades)
@@ -303,11 +317,8 @@ with st.container():
             st.json(res)
             
         st.write("")
-        if st.button("🔄 Reiniciar Aventura", use_container_width=True):
-            st.session_state.clear()
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-        if st.button("🔄 Reiniciar Aventura", use_container_width=True):
+        # LLAVE ÚNICA AÑADIDA PARA EVITAR EL DUPLICATE ELEMENT ID
+        if st.button("🔄 Reiniciar Aventura", use_container_width=True, key="btn_reiniciar_final"):
             st.session_state.clear()
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
