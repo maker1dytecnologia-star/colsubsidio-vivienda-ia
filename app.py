@@ -209,8 +209,8 @@ with st.container():
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
-   # ---------------------------------------------------------
-    # NIVEL 3: ESTRUCTURA (Blindaje de Tipos de Datos)
+  # ---------------------------------------------------------
+    # NIVEL 3: ESTRUCTURA (JSON Plano Exacto para POST /perfilar)
     # ---------------------------------------------------------
     elif st.session_state.nivel == 3:
         st.markdown("<div class='stage-container'><div class='house-graphic'>🏗️</div>", unsafe_allow_html=True)
@@ -219,37 +219,42 @@ with st.container():
         cabeza = st.toggle("👑 Cabeza de Hogar")
         cred_aprobado = st.toggle("💳 Crédito hipotecario pre-aprobado")
         propiedades = st.toggle("🚫 ¿Ya posee propiedad a su nombre?")
-        
-        # Opcional: si quieres pedir un monto rápido de crédito en caso de que lo tenga
-        monto_credito = 0.0
-        if cred_aprobado:
-            monto_credito = st.number_input("Monto aproximado del crédito pre-aprobado (COP):", min_value=0.0, step=1000000.0, value=100000000.0)
 
         st.write("")
         if st.button("🔨 Finalizar y Evaluar Perfil (API POST)", type="primary", use_container_width=True):
-            # 1. Aseguramos condiciones especiales
-            st.session_state.lead['condiciones_especiales_ley']['cabeza_de_hogar'] = bool(cabeza)
             
-            # 2. Blindamos finanzas para evitar nulls o NoneTypes que causan el error 500
-            finanzas = st.session_state.lead['datos_financieros_declarados']
-            finanzas['tiene_credito'] = bool(cred_aprobado)
-            finanzas['tiene_credito_hipotecario_aprobado'] = bool(cred_aprobado)
-            finanzas['monto_credito_aprobado'] = float(monto_credito if cred_aprobado else 0.0)
-            
-            # Asegurar que ingresos y ahorros nunca sean None
-            if finanzas.get('ingresos_mensuales_hogar') is None:
-                finanzas['ingresos_mensuales_hogar'] = 0.0
-            if finanzas.get('cesantias_inmovilizadas') is None:
-                finanzas['cesantias_inmovilizadas'] = 0.0
-            if finanzas.get('ahorro_programado') is None:
-                finanzas['ahorro_programado'] = 0.0
+            # CONSTRUIMOS EL JSON PLANO EXACTO QUE EXIGE EL BACKEND (según plan.md)
+            payload_plano = {
+                "id_usuario": str(st.session_state.lead.get('datos_personales', {}).get('numero_documento', "1018300400")),
+                "nombre": str(st.session_state.lead.get('datos_personales', {}).get('nombres', "Usuario")),
+                "afiliado": bool(st.session_state.lead.get('afiliacion_colsubsidio', {}).get('es_afiliado', False)),
+                "categoria": str(st.session_state.lead.get('afiliacion_colsubsidio', {}).get('categoria', "A")),
+                "antiguedad_meses": int(st.session_state.lead.get('afiliacion_colsubsidio', {}).get('antiguedad_meses', 12)),
+                "tipo_cotizante": str(st.session_state.lead.get('afiliacion_colsubsidio', {}).get('tipo_cotizante', "dependiente")),
+                "ingresos_mensuales": float(st.session_state.lead.get('datos_financieros_declarados', {}).get('ingresos_mensuales_hogar', 2000000)),
+                "grupo_sisben": str(st.session_state.lead.get('informacion_socioeconomica_externa', {}).get('grupo_sisben', "C2")),
+                "edad": int(st.session_state.lead.get('datos_personales', {}).get('edad', 30)),
+                "personas_a_cargo": int(st.session_state.lead.get('afiliacion_colsubsidio', {}).get('personas_a_cargo_registradas', 0)),
+                "condiciones_especiales": {
+                    "cabeza_de_hogar": bool(cabeza),
+                    "discapacidad_hogar": False,
+                    "mayor_65_anos": False
+                },
+                "propietario_vivienda": bool(propiedades),
+                "subsidio_previo": False,
+                "finanzas": {
+                    "cesantias": float(st.session_state.lead.get('datos_financieros_declarados', {}).get('cesantias_inmovilizadas', 0.0)),
+                    "ahorros": float(st.session_state.lead.get('datos_financieros_declarados', {}).get('ahorro_programado', 0.0)),
+                    "credito_preaprobado": bool(cred_aprobado)
+                },
+                "tipo_empresa": "Medianas",
+                "zona_preferida": str(st.session_state.lead.get('preferencias_e_intencion', {}).get('zona_interes', "Soacha")),
+                "valor_vivienda_deseada": 150000000.0,
+                "origen": "organico"
+            }
 
-            # 3. Blindamos socioeconómica externa
-            ext = st.session_state.lead['informacion_socioeconomica_externa']
-            ext['tiene_propiedades_snr'] = int(1 if propiedades else 0)
-
-            with st.spinner("Enviando JSON al motor de reglas..."):
-                st.session_state.api_response = api_post_perfilar(st.session_state.lead)
+            with st.spinner("Enviando JSON plano al motor de reglas..."):
+                st.session_state.api_response = api_post_perfilar(payload_plano)
                 
             st.session_state.nivel = 4
             st.rerun()
