@@ -209,7 +209,9 @@ with st.container():
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # NIVEL 3: ESTRUCTURA
+   # ---------------------------------------------------------
+    # NIVEL 3: ESTRUCTURA (Blindaje de Tipos de Datos)
+    # ---------------------------------------------------------
     elif st.session_state.nivel == 3:
         st.markdown("<div class='stage-container'><div class='house-graphic'>🏗️</div>", unsafe_allow_html=True)
         st.markdown("<div class='narrative-box'><div class='narrative-title'>Paso 4: Levantando Estructura</div>Validamos condiciones especiales y filtros legales.</div>", unsafe_allow_html=True)
@@ -218,11 +220,34 @@ with st.container():
         cred_aprobado = st.toggle("💳 Crédito hipotecario pre-aprobado")
         propiedades = st.toggle("🚫 ¿Ya posee propiedad a su nombre?")
         
+        # Opcional: si quieres pedir un monto rápido de crédito en caso de que lo tenga
+        monto_credito = 0.0
+        if cred_aprobado:
+            monto_credito = st.number_input("Monto aproximado del crédito pre-aprobado (COP):", min_value=0.0, step=1000000.0, value=100000000.0)
+
+        st.write("")
         if st.button("🔨 Finalizar y Evaluar Perfil (API POST)", type="primary", use_container_width=True):
-            st.session_state.lead['condiciones_especiales_ley']['cabeza_de_hogar'] = cabeza
-            st.session_state.lead['datos_financieros_declarados']['tiene_credito_hipotecario_aprobado'] = cred_aprobado
-            st.session_state.lead['informacion_socioeconomica_externa']['tiene_propiedades_snr'] = 1 if propiedades else 0
+            # 1. Aseguramos condiciones especiales
+            st.session_state.lead['condiciones_especiales_ley']['cabeza_de_hogar'] = bool(cabeza)
             
+            # 2. Blindamos finanzas para evitar nulls o NoneTypes que causan el error 500
+            finanzas = st.session_state.lead['datos_financieros_declarados']
+            finanzas['tiene_credito'] = bool(cred_aprobado)
+            finanzas['tiene_credito_hipotecario_aprobado'] = bool(cred_aprobado)
+            finanzas['monto_credito_aprobado'] = float(monto_credito if cred_aprobado else 0.0)
+            
+            # Asegurar que ingresos y ahorros nunca sean None
+            if finanzas.get('ingresos_mensuales_hogar') is None:
+                finanzas['ingresos_mensuales_hogar'] = 0.0
+            if finanzas.get('cesantias_inmovilizadas') is None:
+                finanzas['cesantias_inmovilizadas'] = 0.0
+            if finanzas.get('ahorro_programado') is None:
+                finanzas['ahorro_programado'] = 0.0
+
+            # 3. Blindamos socioeconómica externa
+            ext = st.session_state.lead['informacion_socioeconomica_externa']
+            ext['tiene_propiedades_snr'] = int(1 if propiedades else 0)
+
             with st.spinner("Enviando JSON al motor de reglas..."):
                 st.session_state.api_response = api_post_perfilar(st.session_state.lead)
                 
