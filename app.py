@@ -3,30 +3,81 @@ import requests
 import json
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Colsubsidio - Mi Camino VIS", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Colsubsidio - Asesor Digital VIS", layout="wide", initial_sidebar_state="expanded")
 
-# --- CSS SEGURO Y CORPORATIVO ---
+# --- CSS PROFESIONAL Y CORPORATIVO (FONDO BLANCO ELEGANTE) ---
 st.markdown("""
 <style>
-    .stApp { background-color: #f8fafc; }
-    .game-header { background-color: #0067b1; padding: 30px; color: white; text-align: center; border-radius: 0 0 25px 25px; margin-top: -60px; margin-bottom: 25px; border-bottom: 5px solid #ffd000; }
-    .game-header h1 { color: #ffd000 !important; font-weight: 800; font-size: 2.5rem; }
+    /* Fondo general limpio y profesional */
+    .stApp { 
+        background-color: #f8fafc;
+        background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+        background-size: 24px 24px;
+    }
+    
+    /* Cabecera Corporativa Inmersiva */
+    .game-header { 
+        background: linear-gradient(135deg, #0067b1 0%, #004d85 100%); 
+        padding: 35px; 
+        color: white; 
+        text-align: center; 
+        border-radius: 0 0 30px 30px; 
+        margin-top: -60px; 
+        margin-bottom: 30px; 
+        box-shadow: 0 10px 25px rgba(0, 103, 177, 0.15); 
+        border-bottom: 5px solid #ffd000; 
+    }
+    .game-header h1 { color: #ffd000 !important; font-weight: 900; font-size: 2.6rem; letter-spacing: -0.5px; }
+
+    /* Roadmap Visual (Progreso en el Camino) */
     .roadmap-container { display: flex; justify-content: space-between; align-items: center; position: relative; margin: 20px auto 40px auto; padding: 0 5%; max-width: 900px; }
     .roadmap-step { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 2; width: 20%; }
-    .roadmap-icon { font-size: 2rem; background: white; border: 4px solid #cbd5e1; border-radius: 50%; width: 65px; height: 65px; display: flex; justify-content: center; align-items: center; }
-    .step-active .roadmap-icon { border-color: #ffd000; background: #fffbeb; transform: scale(1.1); }
+    .roadmap-icon { font-size: 2rem; background: #ffffff; border: 4px solid #cbd5e1; border-radius: 50%; width: 70px; height: 70px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.04); transition: all 0.3s ease; }
+    .step-active .roadmap-icon { border-color: #ffd000; background: #fffbeb; transform: scale(1.12); box-shadow: 0 0 15px rgba(255, 208, 0, 0.4); }
     .step-done .roadmap-icon { border-color: #10b981; background: #d1fae5; color: #065f46; }
-    .step-label { font-weight: bold; margin-top: 10px; color: #575756; font-size: 0.85rem; text-align: center; text-transform: uppercase; }
+    .step-label { font-weight: 700; margin-top: 10px; color: #575756; font-size: 0.85rem; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
     .step-active .step-label { color: #0067b1; font-size: 0.95rem; }
-    .roadmap-line { position: absolute; top: 32px; left: 10%; right: 10%; height: 4px; background: #cbd5e1; z-index: 1; }
-    .stage-container { background: #ffffff; border-radius: 20px; padding: 35px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin: 0 auto 30px auto; max-width: 850px; border: 1px solid #e2e8f0; }
-    .house-graphic { font-size: 90px; line-height: 1; margin-bottom: 20px; }
-    .narrative-box { background: #f0f7ff; border-left: 6px solid #0067b1; padding: 20px 25px; border-radius: 0 12px 12px 0; text-align: left; margin: 0 auto 25px auto; font-size: 1.1rem; color: #575756; line-height: 1.5; }
-    .narrative-title { font-weight: 800; color: #0067b1; margin-bottom: 8px; font-size: 1.2rem; text-transform: uppercase; }
-    .stButton > button { background-color: #0067b1 !important; color: white !important; font-weight: bold; border-radius: 10px; border: none; padding: 0.5rem 1rem; }
+    .roadmap-line { position: absolute; top: 34px; left: 10%; right: 10%; height: 4px; background: #cbd5e1; z-index: 1; border-radius: 2px; }
+    
+    /* Contenedor Principal (Tarjeta Estilo Corporativo) */
+    .stage-container { 
+        background: #ffffff; 
+        border-radius: 24px; 
+        padding: 45px; 
+        text-align: center; 
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06); 
+        margin: 0 auto 40px auto; 
+        max-width: 850px; 
+        border: 1px solid #e2e8f0; 
+    }
+    .house-graphic { font-size: 100px; line-height: 1; margin-bottom: 25px; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.08)); }
+    
+    /* Caja de Mentoría / Narrativa */
+    .narrative-box { 
+        background: #f0f7ff; 
+        border-left: 6px solid #0067b1; 
+        padding: 22px 30px; 
+        border-radius: 0 14px 14px 0; 
+        text-align: left; 
+        margin: 0 auto 30px auto; 
+        font-size: 1.1rem; 
+        color: #575756; 
+        line-height: 1.6; 
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);
+    }
+    .narrative-title { font-weight: 800; color: #0067b1; margin-bottom: 8px; font-size: 1.25rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    /* Botones y Radio Buttons Profesionales */
+    .stButton > button { background-color: #0067b1 !important; color: white !important; font-weight: 700; border-radius: 12px; border: none; padding: 0.6rem 1.5rem; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0, 103, 177, 0.2); }
+    .stButton > button:hover { background-color: #004d85 !important; transform: translateY(-1px); box-shadow: 0 6px 12px rgba(0, 103, 177, 0.3); }
+    
     .stSlider > label, .stNumberInput > label, .stRadio > label, .stSelectbox > label { display: none; }
-    div.row-widget.stRadio > div { flex-direction: row; flex-wrap: wrap; gap: 10px; justify-content: center; }
-    div.row-widget.stRadio > div > label { background: #f8fafc; padding: 10px 20px; border-radius: 20px; border: 2px solid #e2e8f0; font-weight: 600; color: #575756; }
+    div.row-widget.stRadio > div { flex-direction: row; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    div.row-widget.stRadio > div > label { background: #ffffff; padding: 12px 24px; border-radius: 30px; border: 2px solid #cbd5e1; font-weight: 600; color: #575756; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    div.row-widget.stRadio > div > label:hover { border-color: #0067b1; color: #0067b1; background: #f0f7ff; }
+    
+    /* Sidebar Estilizado */
+    [data-testid="stSidebar"] { background-color: #ffffff; border-right: 1px solid #e2e8f0; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -108,7 +159,7 @@ with st.sidebar:
         st.markdown(f"**Cofre de Ahorros:**<br>💰 ${oro:,.0f}", unsafe_allow_html=True)
 
 # --- CABECERA ---
-st.markdown("<div class='game-header'><h1>🏠 El Camino hacia tu Casa Propia</h1><p style='color: #e2e8f0; font-size: 1.1rem; margin-top: 5px;'>Asesor Digital Inteligente — Colsubsidio</p></div>", unsafe_allow_html=True)
+st.markdown("<div class='game-header'><h1>🏠 El Camino hacia tu Casa Propia</h1><p style='color: #f1f5f9; font-size: 1.1rem; margin-top: 5px;'>Asesor Digital Inteligente — Colsubsidio</p></div>", unsafe_allow_html=True)
 
 # --- MAPA VISUAL ---
 etapas = [("🔐", "Identidad"), ("📐", "Planos"), ("🧱", "Cimientos"), ("🏗️", "Estructura"), ("🔑", "La Llave")]
@@ -252,6 +303,10 @@ with st.container():
             st.json(res)
             
         st.write("")
+        if st.button("🔄 Reiniciar Aventura", use_container_width=True):
+            st.session_state.clear()
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
         if st.button("🔄 Reiniciar Aventura", use_container_width=True):
             st.session_state.clear()
             st.rerun()
