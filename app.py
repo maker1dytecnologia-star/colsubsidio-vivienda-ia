@@ -126,9 +126,12 @@ with st.container():
         
         if not afiliado:
             st.session_state.lead['datos_personales']['nombres'] = st.text_input("¿Cómo te llamas?", placeholder="Tu nombre...")
-            st.session_state.lead['datos_financieros_declarados']['ingresos_mensuales_hogar'] = st.number_input("Ingresos mensuales (COP):", step=100000)
             
-        st.markdown("**1. Desliza para indicar tu edad actual:**")
+            # --- SOLUCIÓN: Agregamos el texto explicativo para el input oculto ---
+            st.markdown("<br>**¿Cuáles son tus ingresos mensuales aproximados? (COP)**", unsafe_allow_html=True)
+            st.session_state.lead['datos_financieros_declarados']['ingresos_mensuales_hogar'] = st.number_input("Ingresos", step=100000)
+            
+        st.markdown("<br>**1. Desliza para indicar tu edad actual:**", unsafe_allow_html=True)
         edad = st.slider("Edad", 18, 80, 30)
         
         st.markdown("**2. ¿En qué zona de Cundinamarca imaginas tu hogar?**")
