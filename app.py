@@ -255,4 +255,7 @@ with st.container():
         if st.button("🔄 Reiniciar Aventura", use_container_width=True):
             st.session_state.clear()
             st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)einiciar Aventura", use_container_width=True):
+            st.session_state.clear()
+            st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
