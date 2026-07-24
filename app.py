@@ -5,94 +5,104 @@ import json
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Colsubsidio - Asesor Digital VIS", layout="wide", initial_sidebar_state="expanded")
 
-# --- CSS PROFESIONAL CON JUEGO DE COLORES CORPORATIVOS ---
+# --- CSS PROFESIONAL Y FONDO ANIMADO CORPORATIVO ---
 st.markdown("""
 <style>
-    /* Fondo con gradiente corporativo vivo y patrón geométrico sutil */
-    .stApp { 
-        background: linear-gradient(135deg, #f0f7ff 0%, #f8fafc 50%, #fffbeb 100%);
-        background-attachment: fixed;
-    }
-    
-    .stApp::before {
-        content: "";
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background-image: radial-gradient(rgba(0, 103, 177, 0.05) 2px, transparent 2px), radial-gradient(rgba(255, 208, 0, 0.05) 2px, transparent 2px);
-        background-size: 32px 32px;
-        background-position: 0 0, 16px 16px;
-        z-index: 0;
-        pointer-events: none;
+    /* Ocultar el fondo por defecto */
+    .stApp {
+        background-color: transparent !important;
     }
 
-    /* Cabecera Corporativa Inmersiva */
+    /* CONTENEDOR DE LA ANIMACIÓN DE FONDO */
+    .area {
+        background: linear-gradient(135deg, #f0f7ff 0%, #f8fafc 100%);
+        width: 100%;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: -999;
+    }
+
+    .circles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+    }
+
+    .circles li {
+        position: absolute;
+        display: block;
+        list-style: none;
+        width: 20px;
+        height: 20px;
+        background: rgba(0, 103, 177, 0.1); /* Azul Colsubsidio transparente */
+        animation: animate 25s linear infinite;
+        bottom: -150px;
+    }
+
+    /* Diferentes tamaños, posiciones y colores para las figuras flotantes */
+    .circles li:nth-child(1) { left: 25%; width: 80px; height: 80px; animation-delay: 0s; }
+    .circles li:nth-child(2) { left: 10%; width: 30px; height: 30px; animation-delay: 2s; animation-duration: 12s; background: rgba(255, 208, 0, 0.15); /* Amarillo Colsubsidio */ }
+    .circles li:nth-child(3) { left: 70%; width: 25px; height: 25px; animation-delay: 4s; }
+    .circles li:nth-child(4) { left: 40%; width: 60px; height: 60px; animation-delay: 0s; animation-duration: 18s; background: rgba(255, 208, 0, 0.1); }
+    .circles li:nth-child(5) { left: 65%; width: 20px; height: 20px; animation-delay: 0s; }
+    .circles li:nth-child(6) { left: 75%; width: 110px; height: 110px; animation-delay: 3s; }
+    .circles li:nth-child(7) { left: 35%; width: 150px; height: 150px; animation-delay: 7s; background: rgba(255, 208, 0, 0.12); }
+    .circles li:nth-child(8) { left: 50%; width: 25px; height: 25px; animation-delay: 15s; animation-duration: 45s; }
+    .circles li:nth-child(9) { left: 20%; width: 15px; height: 15px; animation-delay: 2s; animation-duration: 35s; background: rgba(255, 208, 0, 0.2); }
+    .circles li:nth-child(10) { left: 85%; width: 150px; height: 150px; animation-delay: 0s; animation-duration: 11s; }
+
+    @keyframes animate {
+        0% { transform: translateY(0) rotate(0deg); opacity: 1; border-radius: 0; }
+        100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; border-radius: 50%; }
+    }
+
+    /* RESTO DE TUS ESTILOS (Cabecera, Tarjetas, Botones) */
     .game-header { 
         background: linear-gradient(135deg, #0067b1 0%, #004d85 100%); 
-        padding: 35px; 
-        color: white; 
-        text-align: center; 
-        border-radius: 0 0 35px 35px; 
-        margin-top: -60px; 
-        margin-bottom: 30px; 
-        box-shadow: 0 10px 30px rgba(0, 103, 177, 0.2); 
-        border-bottom: 6px solid #ffd000; 
-        position: relative;
-        z-index: 1;
+        padding: 35px; color: white; text-align: center; border-radius: 0 0 30px 30px; 
+        margin-top: -60px; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(0, 103, 177, 0.15); border-bottom: 5px solid #ffd000; 
     }
-    .game-header h1 { color: #ffd000 !important; font-weight: 900; font-size: 2.8rem; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .game-header h1 { color: #ffd000 !important; font-weight: 900; font-size: 2.6rem; letter-spacing: -0.5px; }
 
-    /* Roadmap Visual */
-    .roadmap-container { display: flex; justify-content: space-between; align-items: center; position: relative; margin: 20px auto 50px auto; padding: 0 5%; max-width: 1000px; z-index: 1; }
+    .roadmap-container { display: flex; justify-content: space-between; align-items: center; position: relative; margin: 20px auto 40px auto; padding: 0 5%; max-width: 900px; }
     .roadmap-step { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 2; width: 20%; }
-    .roadmap-icon { font-size: 2.2rem; background: #ffffff; border: 4px solid #cbd5e1; border-radius: 50%; width: 75px; height: 75px; display: flex; justify-content: center; align-items: center; z-index: 2; transition: all 0.4s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    .step-active .roadmap-icon { border-color: #ffd000; background: #fffbeb; transform: scale(1.15); box-shadow: 0 0 20px rgba(255, 208, 0, 0.5); }
+    .roadmap-icon { font-size: 2rem; background: #ffffff; border: 4px solid #cbd5e1; border-radius: 50%; width: 70px; height: 70px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.04); transition: all 0.3s ease; }
+    .step-active .roadmap-icon { border-color: #ffd000; background: #fffbeb; transform: scale(1.12); box-shadow: 0 0 15px rgba(255, 208, 0, 0.4); }
     .step-done .roadmap-icon { border-color: #10b981; background: #d1fae5; color: #065f46; }
-    .step-label { font-weight: 700; margin-top: 12px; color: #575756; font-size: 0.9rem; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
-    .step-active .step-label { color: #0067b1; font-size: 1rem; }
-    .roadmap-line { position: absolute; top: 37px; left: 10%; right: 10%; height: 5px; background: #cbd5e1; z-index: 1; border-radius: 3px; }
+    .step-label { font-weight: 700; margin-top: 10px; color: #575756; font-size: 0.85rem; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
+    .step-active .step-label { color: #0067b1; font-size: 0.95rem; }
+    .roadmap-line { position: absolute; top: 34px; left: 10%; right: 10%; height: 4px; background: #cbd5e1; z-index: 1; border-radius: 2px; }
     
-    /* Contenedor Principal (Tarjetas de Etapa) */
-    .stage-container { 
-        background: rgba(255, 255, 255, 0.95); 
-        backdrop-filter: blur(10px); 
-        border-radius: 25px; 
-        padding: 45px; 
-        text-align: center; 
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); 
-        margin: 0 auto 40px auto; 
-        border: 2px solid rgba(0, 103, 177, 0.1); 
-        max-width: 900px; 
-        position: relative; 
-        z-index: 1; 
-    }
-    .house-graphic { font-size: 110px; line-height: 1; margin-bottom: 25px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1)); }
+    .stage-container { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border-radius: 24px; padding: 45px; text-align: center; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06); margin: 0 auto 40px auto; max-width: 850px; border: 1px solid rgba(255,255,255,0.5); }
+    .house-graphic { font-size: 100px; line-height: 1; margin-bottom: 25px; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.08)); }
     
-    /* Caja de Narrativa */
-    .narrative-box { 
-        background: #f0f7ff; 
-        border-left: 8px solid #0067b1; 
-        padding: 25px 30px; 
-        border-radius: 0 16px 16px 0; 
-        text-align: left; 
-        margin: 0 auto 35px auto; 
-        font-size: 1.15rem; 
-        color: #575756; 
-        line-height: 1.7; 
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);
-    }
-    .narrative-title { font-weight: 900; color: #0067b1; margin-bottom: 12px; font-size: 1.35rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .narrative-box { background: #f0f7ff; border-left: 6px solid #0067b1; padding: 22px 30px; border-radius: 0 14px 14px 0; text-align: left; margin: 0 auto 30px auto; font-size: 1.1rem; color: #575756; line-height: 1.6; }
+    .narrative-title { font-weight: 800; color: #0067b1; margin-bottom: 8px; font-size: 1.25rem; text-transform: uppercase; letter-spacing: 0.5px; }
     
-    /* Botones Interactivos Corporativos */
-    .stButton > button { background-color: #0067b1 !important; color: white !important; font-weight: 800; border-radius: 12px; border: none; padding: 0.6rem 1.5rem; transition: all 0.3s; box-shadow: 0 4px 10px rgba(0, 103, 177, 0.3); }
-    .stButton > button:hover { background-color: #004d85 !important; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0, 103, 177, 0.4); }
+    .stButton > button { background-color: #0067b1 !important; color: white !important; font-weight: 700; border-radius: 12px; border: none; padding: 0.6rem 1.5rem; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0, 103, 177, 0.2); }
+    .stButton > button:hover { background-color: #004d85 !important; transform: translateY(-1px); box-shadow: 0 6px 12px rgba(0, 103, 177, 0.3); }
     
     .stSlider > label, .stNumberInput > label, .stRadio > label, .stSelectbox > label { display: none; }
     div.row-widget.stRadio > div { flex-direction: row; flex-wrap: wrap; gap: 12px; justify-content: center; }
-    div.row-widget.stRadio > div > label { background: white; padding: 12px 25px; border-radius: 30px; border: 2px solid #cbd5e1; font-weight: 700; color: #575756; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    div.row-widget.stRadio > div > label { background: #ffffff; padding: 12px 24px; border-radius: 30px; border: 2px solid #cbd5e1; font-weight: 600; color: #575756; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
     div.row-widget.stRadio > div > label:hover { border-color: #0067b1; color: #0067b1; background: #f0f7ff; }
     
-    [data-testid="stSidebar"] { background-color: #ffffff; border-right: 1px solid #cbd5e1; }
+    [data-testid="stSidebar"] { background-color: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-right: 1px solid #e2e8f0; }
 </style>
+
+<!-- ESTRUCTURA HTML PARA EL FONDO ANIMADO -->
+<div class="area">
+    <ul class="circles">
+        <li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li>
+    </ul>
+</div>
 """, unsafe_allow_html=True)
 
 # --- CONFIGURACIÓN DE API Y MODO SEGURO ---
