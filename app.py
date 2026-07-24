@@ -1,217 +1,230 @@
 import streamlit as st
-import json
 import time
 
-# --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Colsubsidio - Mi Camino VIS", layout="wide", initial_sidebar_state="collapsed")
+# --- CONFIGURACIÓN Y ESTILOS ---
+st.set_page_config(page_title="Mi Camino VIS", layout="wide", initial_sidebar_state="collapsed")
 
-# --- CSS PERSONALIZADO (UI/UX Gamificada) ---
 st.markdown("""
 <style>
-    /* Colores corporativos Colsubsidio: Azul #002D72, Amarillo #FFCD00 */
-    .hero-header { background: linear-gradient(135deg, #002D72 0%, #001A42 100%); padding: 30px; color: white; text-align: center; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    .hero-header h1 { color: #FFCD00 !important; font-size: 2.5rem; margin-bottom: 5px; }
+    /* Fondo principal sutil para no verse tan "blanco" */
+    .stApp { background-color: #F3F4F6; }
     
-    /* Tarjetas de Estación */
-    .station-card { background-color: #ffffff; border-top: 6px solid #FFCD00; padding: 25px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: transform 0.2s; }
-    .station-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+    /* Cabecera inmersiva */
+    .hero-header { background: linear-gradient(135deg, #002D72 0%, #0055A5 100%); padding: 35px; color: white; text-align: center; border-radius: 0 0 30px 30px; margin-top: -60px; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    .hero-header h1 { color: #FFCD00 !important; font-weight: 800; font-size: 2.8rem; }
     
-    /* Burbujas de diálogo del Asesor */
-    .bot-bubble { background-color: #E8F0FE; border-left: 5px solid #1A73E8; padding: 15px 20px; border-radius: 0 15px 15px 15px; margin-bottom: 20px; color: #1F2937; font-size: 1.05rem; }
+    /* Tarjetas de Nivel (Misiones) */
+    .level-card { background-color: #FFFFFF; border-left: 6px solid #FFCD00; padding: 30px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 6px 12px rgba(0,0,0,0.06); }
     
-    /* Panel lateral de Inventario/Consola */
-    .inventory-panel { background-color: #F8F9FA; padding: 20px; border-radius: 12px; border: 1px solid #E5E7EB; }
-    .inventory-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #E5E7EB; }
-    .status-badge-ok { background-color: #D1FAE5; color: #065F46; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.8rem; }
-    .status-badge-wait { background-color: #FEE2E2; color: #991B1B; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.8rem; }
+    /* Chatbots y Narrativa */
+    .avatar-bot { font-size: 2rem; margin-right: 15px; }
+    .bot-bubble { background-color: #E8F0FE; border: 1px solid #D2E3FC; padding: 18px 25px; border-radius: 20px 20px 20px 0px; color: #1F2937; font-size: 1.1rem; display: flex; align-items: center; margin-bottom: 25px; box-shadow: 2px 2px 8px rgba(26,115,232,0.1); }
     
-    /* Ocultar etiquetas por defecto de Streamlit para un look más limpio */
-    .stTextInput > div > div > input { border-radius: 8px; }
-    .stSelectbox > div > div > div { border-radius: 8px; }
+    /* Panel Lateral (Inventario) */
+    .inventory-panel { background-color: #FFFFFF; padding: 25px; border-radius: 15px; border: 2px dashed #002D72; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    
+    /* Ocultar labels aburridos de Streamlit para un look app */
+    .stSlider > label { display: none; }
+    .stRadio > label { display: none; }
+    .stNumberInput > label { display: none; }
+    
+    /* Botones de selección rápida (Radio buttons simulando pills) */
+    div.row-widget.stRadio > div { flex-direction: row; align-items: stretch; }
+    div.row-widget.stRadio > div > label { background-color: #F3F4F6; padding: 10px 20px; border-radius: 10px; margin-right: 10px; border: 1px solid #E5E7EB; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- SIMULACIÓN DE ENDPOINTS (MOCKS) ---
+# --- SIMULACIÓN DE API ---
 def api_get_afiliado(cedula):
-    db_colsubsidio = {
-        "1018300400": {
-            "datos_personales": {"tipo_documento": "CC", "numero_documento": "1018300400", "nombres": "Diana Carolina", "apellidos": "Rangel"},
-            "afiliacion_colsubsidio": {"es_afiliado": True, "tipo_afiliado": "Dependiente", "antiguedad_meses": 24, "categoria": "A"},
-            "datos_financieros_declarados": {"ingresos_verificados_pila": 2800000.0, "ingresos_mensuales_hogar": 2800000.0, "cesantias_inmovilizadas": 0.0, "ahorro_programado": 0.0},
-            "preferencias_e_intencion": {"zona_interes": ""},
-            "condiciones_especiales_ley": {"cabeza_de_hogar": False}
-        }
+    # Mock básico
+    db = {"1018300400": {"nombres": "Diana", "es_afiliado": True, "ingresos": 2800000, "personas_cargo": 2}}
+    time.sleep(0.5)
+    return db.get(cedula, None)
+
+# --- ESTADO DEL JUEGO ---
+if 'nivel' not in st.session_state: st.session_state.nivel = 0
+if 'lead' not in st.session_state: 
+    # Plantilla JSON Completa Acordada
+    st.session_state.lead = {
+        "datos_personales": {"numero_documento": "", "nombres": "", "edad": 30},
+        "afiliacion_colsubsidio": {"es_afiliado": False, "personas_a_cargo_registradas": 0},
+        "datos_financieros_declarados": {"ingresos_mensuales_hogar": 0, "cesantias_inmovilizadas": 0, "ahorro_programado": 0, "tiene_credito": False},
+        "preferencias_e_intencion": {"zona_interes": "Soacha", "plazo_compra": "Corto plazo"},
+        "informacion_socioeconomica_externa": {"grupo_sisben": "N/A", "tiene_propiedades_snr": 0, "tiene_subsidios_previos": False},
+        "condiciones_especiales_ley": {"cabeza_de_hogar": False, "discapacidad": False, "mayor_65": False}
     }
-    time.sleep(0.5) 
-    return db_colsubsidio.get(cedula, None)
 
-# --- INICIALIZACIÓN DE ESTADOS ---
-if 'estacion_actual' not in st.session_state:
-    st.session_state.estacion_actual = 0
-if 'lead' not in st.session_state:
-    st.session_state.lead = {}
+# --- HEADER VISUAL ---
+st.markdown("<div class='hero-header'><h1>🏠 Tu Aventura VIS</h1><p>Conquista tu casa propia superando estas misiones.</p></div>", unsafe_allow_html=True)
 
-# --- CABECERA VISUAL ---
-st.markdown("""
-<div class="hero-header">
-    <h1>🏠 Mi Camino VIS</h1>
-    <p>Construyamos juntos el sueño de tu casa propia, paso a paso.</p>
-</div>
-""", unsafe_allow_html=True)
-
-# --- VISUAL STEPPER (Barra de progreso gráfica) ---
-def render_stepper(current_step):
-    steps = [
-        ("🔐", "Ingreso"), ("💭", "Planos"), 
-        ("🪙", "Cimientos"), ("⚡", "Estructura"), ("🏠", "La Llave")
-    ]
-    cols = st.columns(5)
-    for i, (icon, name) in enumerate(steps):
-        with cols[i]:
-            if i < current_step:
-                st.success(f"{icon} {name}")
-            elif i == current_step:
-                st.info(f"{icon} **{name}**")
-            else:
-                st.markdown(f"<div style='opacity: 0.4; text-align: center; padding: 10px;'>{icon} {name}</div>", unsafe_allow_html=True)
-
-render_stepper(st.session_state.estacion_actual)
-st.write("") # Espaciador
-
-# --- LAYOUT PRINCIPAL ---
-col_juego, espaciador, col_consola = st.columns([5.5, 0.5, 4])
+# Layout: Izquierda (Juego) 70% | Derecha (Inventario) 30%
+col_juego, col_inv = st.columns([7, 3])
 
 with col_juego:
-    # ==========================================
-    # ESTACIÓN 0: IDENTIFICACIÓN
-    # ==========================================
-    if st.session_state.estacion_actual == 0:
-        st.markdown('<div class="station-card">', unsafe_allow_html=True)
-        st.markdown("<div class='bot-bubble'>¡Hola! Soy tu guía en este viaje. Para empezar a construir, necesito verificar tu identidad. Si eres afiliado, ¡tendrás ventajas!</div>", unsafe_allow_html=True)
+    # ---------------------------------------------------------
+    # NIVEL 0: EL PÓRTICO (Identidad)
+    # ---------------------------------------------------------
+    if st.session_state.nivel == 0:
+        st.markdown("<div class='level-card'>", unsafe_allow_html=True)
+        st.markdown("<div class='bot-bubble'><span class='avatar-bot'>🦉</span><div>¡Hola viajero! Para dejarte pasar y ver si tienes beneficios de afiliado, escribe el número de tu documento de identidad mágico.</div></div>", unsafe_allow_html=True)
         
-        cedula_input = st.text_input("Ingresa tu documento (Ej: 1018300400):", placeholder="Tu número de cédula...")
-        
-        if st.button("🚪 Abrir la puerta", type="primary", use_container_width=True):
-            with st.spinner("Buscando en los registros mágicos..."):
-                datos = api_get_afiliado(cedula_input)
-                if datos:
-                    st.session_state.lead = datos
-                    st.toast('¡Afiliado detectado!', icon='🎉')
-                else:
-                    st.session_state.lead = {"datos_personales": {"numero_documento": cedula_input, "nombres": ""}, "afiliacion_colsubsidio": {"es_afiliado": False}, "datos_financieros_declarados": {"ingresos_mensuales_hogar": 0.0, "cesantias_inmovilizadas": 0.0, "ahorro_programado": 0.0}, "preferencias_e_intencion": {"zona_interes": ""}, "condiciones_especiales_ley": {"cabeza_de_hogar": False}}
-            st.session_state.estacion_actual = 1
+        cedula = st.text_input("Ingresa tu cédula:", placeholder="Ej: 1018300400")
+        if st.button("🔑 Desbloquear la Puerta", type="primary"):
+            datos = api_get_afiliado(cedula)
+            st.session_state.lead['datos_personales']['numero_documento'] = cedula
+            if datos:
+                st.session_state.lead['afiliacion_colsubsidio']['es_afiliado'] = True
+                st.session_state.lead['datos_personales']['nombres'] = datos['nombres']
+                st.session_state.lead['datos_financieros_declarados']['ingresos_mensuales_hogar'] = datos['ingresos']
+                st.session_state.lead['afiliacion_colsubsidio']['personas_a_cargo_registradas'] = datos['personas_cargo']
+            st.session_state.nivel = 1
             st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    # ==========================================
-    # ESTACIÓN 1: EL SUEÑO (Planos)
-    # ==========================================
-    if st.session_state.estacion_actual == 1:
-        st.markdown('<div class="station-card">', unsafe_allow_html=True)
+    # ---------------------------------------------------------
+    # NIVEL 1: LOS PLANOS (Edad, Nombre, Zona, Plazo)
+    # ---------------------------------------------------------
+    elif st.session_state.nivel == 1:
+        st.markdown("<div class='level-card'>", unsafe_allow_html=True)
+        afiliado = st.session_state.lead['afiliacion_colsubsidio']['es_afiliado']
+        saludo = f"¡Qué gusto {st.session_state.lead['datos_personales']['nombres']}!" if afiliado else "¡Bienvenido nuevo constructor!"
         
-        if st.session_state.lead['afiliacion_colsubsidio']['es_afiliado']:
-            nombre = st.session_state.lead['datos_personales']['nombres']
-            st.markdown(f"<div class='bot-bubble'>¡Bienvenido de vuelta, {nombre}! 🌟<br>Ya tengo tus datos de ingresos registrados. Ahora cuéntame, ¿dónde te gustaría que construyamos?</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='bot-bubble'><span class='avatar-bot'>📐</span><div>{saludo} Para buscar el proyecto ideal en nuestro mapa y ver si aplicas al bono 'Joven', necesito un par de datos de tu visión.</div></div>", unsafe_allow_html=True)
+        
+        if not afiliado:
+            st.markdown("**¿Cómo te llamas?**")
+            st.session_state.lead['datos_personales']['nombres'] = st.text_input("Tu nombre", placeholder="Escribe aquí tu nombre...")
+            
+        st.markdown("**¿Cuántos años tienes? (Desliza para responder)**")
+        edad = st.slider("Edad", 18, 80, 30)
+        
+        st.markdown("**¿En qué reino quieres tu casa?**")
+        zona = st.radio("Zona", ["Soacha 🏙️", "Bogotá 🌆", "Tocancipá ⛰️", "Girardot ☀️"], horizontal=True)
+        
+        st.markdown("**¿Qué tan pronto quieres mudarte? (La urgencia de tu misión)**")
+        plazo = st.radio("Plazo", ["Corto plazo (Menos de 6 meses) 🏃", "Mediano (6 - 12 meses) 🚶", "Largo plazo (Más de 1 año) 🧘"], horizontal=True)
+        
+        if st.button("✅ Confirmar Planos", type="primary"):
+            st.session_state.lead['datos_personales']['edad'] = edad
+            st.session_state.lead['preferencias_e_intencion']['zona_interes'] = zona.split(" ")[0] # Quitamos el emoji para el JSON
+            st.session_state.lead['preferencias_e_intencion']['plazo_compra'] = plazo
+            st.session_state.nivel = 2
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # ---------------------------------------------------------
+    # NIVEL 2: LA TRIPULACIÓN Y PODERES (Familia y Ley)
+    # ---------------------------------------------------------
+    elif st.session_state.nivel == 2:
+        st.markdown("<div class='level-card'>", unsafe_allow_html=True)
+        st.markdown("<div class='bot-bubble'><span class='avatar-bot'>👨‍👩‍👧‍👦</span><div>Toda gran aventura requiere compañía. ¿Quiénes van contigo? Y más importante, veamos si tu grupo familiar tiene poderes especiales ante la ley.</div></div>", unsafe_allow_html=True)
+        
+        if not st.session_state.lead['afiliacion_colsubsidio']['es_afiliado']:
+            st.markdown("**¿Cuántas personas dependen económicamente de ti? (Desliza)**")
+            personas = st.slider("Personas a cargo", 0, 10, 0)
         else:
-            st.markdown("<div class='bot-bubble'>¡Encantado de conocerte! Como eres nuevo por aquí, necesito conocerte un poco mejor para dibujar los planos correctos.</div>", unsafe_allow_html=True)
+            personas = st.session_state.lead['afiliacion_colsubsidio']['personas_a_cargo_registradas']
+            st.success(f"🪄 La Caja me dice que tienes {personas} personas a cargo registradas.")
             
-            c1, c2 = st.columns(2)
-            st.session_state.lead['datos_personales']['nombres'] = c1.text_input("✍️ Tu nombre:")
-            st.session_state.lead['datos_financieros_declarados']['ingresos_mensuales_hogar'] = c2.number_input("💵 Tus ingresos mensuales:", min_value=0.0, step=100000.0)
-            
-        zona = st.radio("📍 Elige la zona de tu futuro hogar:", ["Soacha", "Bogotá", "Tocancipá"], horizontal=True)
+        st.markdown("**🌟 Activa los poderes de tu hogar si los tienes (Suman mucho puntaje):**")
+        c1, c2, c3 = st.columns(3)
+        cabeza = c1.toggle("👑 Madre/Padre cabeza de hogar")
+        discapacidad = c2.toggle("♿ Miembro con discapacidad")
+        mayor = c3.toggle("👴 Miembro mayor de 65 años")
         
-        if st.button("✅ Fijar Planos y Avanzar", type="primary", use_container_width=True):
-            if not st.session_state.lead['datos_personales']['nombres']:
-                st.warning("No olvides decirme tu nombre.")
-            else:
-                st.session_state.lead['preferencias_e_intencion']['zona_interes'] = zona
-                st.session_state.estacion_actual = 2
-                st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    # ==========================================
-    # ESTACIÓN 2: EL COFRE (Cimientos)
-    # ==========================================
-    if st.session_state.estacion_actual == 2:
-        st.markdown('<div class="station-card">', unsafe_allow_html=True)
-        st.markdown("<div class='bot-bubble'>Los cimientos de una casa son tus ahorros. 🪙<br>No te preocupes si no es mucho, todo suma. ¿Qué recursos tienes guardados en tu cofre?</div>", unsafe_allow_html=True)
+        st.markdown("**📜 El Pergamino de Mi Casa Ya (Sisbén):**")
+        sisben = st.radio("Grupo Sisbén", ["No tengo ❌", "A1-A5 🟢", "B1-B7 🟡", "C1-C18 🟠", "D1-D21 🔴"], horizontal=True)
         
-        c1, c2 = st.columns(2)
-        cesantias = c1.number_input("💼 Cesantías (COP):", min_value=0.0, step=500000.0)
-        ahorro = c2.number_input("🏦 Ahorros Extra (COP):", min_value=0.0, step=500000.0)
-        
-        if st.button("🏗️ Verter los Cimientos", type="primary", use_container_width=True):
-            st.session_state.lead['datos_financieros_declarados']['cesantias_inmovilizadas'] = cesantias
-            st.session_state.lead['datos_financieros_declarados']['ahorro_programado'] = ahorro
-            st.session_state.estacion_actual = 3
+        if st.button("✅ Tripulación Lista", type="primary"):
+            st.session_state.lead['afiliacion_colsubsidio']['personas_a_cargo_registradas'] = personas
+            st.session_state.lead['condiciones_especiales_ley']['cabeza_de_hogar'] = cabeza
+            st.session_state.lead['condiciones_especiales_ley']['discapacidad'] = discapacidad
+            st.session_state.lead['condiciones_especiales_ley']['mayor_65'] = mayor
+            st.session_state.lead['informacion_socioeconomica_externa']['grupo_sisben'] = sisben.split(" ")[0]
+            st.session_state.nivel = 3
             st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    # ==========================================
-    # ESTACIÓN 3: TUS PODERES
-    # ==========================================
-    if st.session_state.estacion_actual == 3:
-        st.markdown('<div class="station-card">', unsafe_allow_html=True)
-        st.markdown("<div class='bot-bubble'>¡Casi terminamos! ⚡ Para fortalecer la estructura, veamos si posees alguna condición especial que nos otorgue ventajas o subsidios adicionales.</div>", unsafe_allow_html=True)
+    # ---------------------------------------------------------
+    # NIVEL 3: EL COFRE Y EL ESCUDO LEGAL (Finanzas y Exclusiones)
+    # ---------------------------------------------------------
+    elif st.session_state.nivel == 3:
+        st.markdown("<div class='level-card'>", unsafe_allow_html=True)
+        st.markdown("<div class='bot-bubble'><span class='avatar-bot'>🪙</span><div>¡Última parada! Vamos a contar el oro de tu cofre y revisar que tu historial legal esté impecable para reclamar los subsidios.</div></div>", unsafe_allow_html=True)
         
-        cabeza_hogar = st.toggle("🛡️ Soy Cabeza de Familia")
-        sisben = st.selectbox("📋 ¿Tienes Sisbén?", ["No aplica", "A1-A5", "B1-B7", "C1-C18"])
+        if not st.session_state.lead['afiliacion_colsubsidio']['es_afiliado']:
+            st.markdown("**¿Cuáles son los ingresos totales de tu hogar al mes? (Importante para el límite del subsidio)**")
+            ingresos = st.number_input("Ingresos", min_value=0, step=100000, value=2000000)
+        else:
+            ingresos = st.session_state.lead['datos_financieros_declarados']['ingresos_mensuales_hogar']
+            
+        c1, c2 = st.columns(2)
+        st.markdown("**💰 Tu Cofre de Ahorros:**")
+        cesantias = c1.number_input("Cesantías guardadas (COP)", step=500000, value=2000000)
+        ahorros = c2.number_input("Ahorros propios (COP)", step=500000, value=3000000)
         
-        if st.button("🏠 Terminar mi Casa", type="primary", use_container_width=True):
-            st.session_state.lead['condiciones_especiales_ley']['cabeza_de_hogar'] = cabeza_hogar
-            st.session_state.estacion_actual = 4
+        st.markdown("**🛡️ Tu Escudo Legal (Responde con la verdad):**")
+        credito = st.toggle("💳 Ya tengo un crédito pre-aprobado (¡Acelera el proceso!)")
+        propiedades = st.toggle("🚫 Alguien en mi hogar ya es propietario de una casa (Cuidado: Bloquea el subsidio)")
+        sub_previo = st.toggle("🚫 Ya recibimos un subsidio de vivienda antes")
+        
+        if st.button("🚀 Evaluar mi Perfil (Finalizar)", type="primary"):
+            st.session_state.lead['datos_financieros_declarados']['ingresos_mensuales_hogar'] = ingresos
+            st.session_state.lead['datos_financieros_declarados']['cesantias_inmovilizadas'] = cesantias
+            st.session_state.lead['datos_financieros_declarados']['ahorro_programado'] = ahorros
+            st.session_state.lead['datos_financieros_declarados']['tiene_credito'] = credito
+            st.session_state.lead['informacion_socioeconomica_externa']['tiene_propiedades_snr'] = 1 if propiedades else 0
+            st.session_state.lead['informacion_socioeconomica_externa']['tiene_subsidios_previos'] = sub_previo
+            st.session_state.nivel = 4
             st.balloons()
             st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    # ==========================================
-    # ESTACIÓN 4: COMPLETADO
-    # ==========================================
-    if st.session_state.estacion_actual == 4:
-        st.markdown('<div class="station-card" style="text-align:center;">', unsafe_allow_html=True)
-        st.image("https://cdn-icons-png.flaticon.com/512/7514/7514032.png", width=150) # Icono de casa 3D
-        st.markdown("### ¡Felicidades! Has completado tu Camino VIS 🎉")
-        st.markdown("He enviado tus planos y tu cofre a la central. Revisa el panel de la derecha para ver qué proyecto te recomendamos.")
-        if st.button("🔄 Jugar de Nuevo", use_container_width=True):
+    # ---------------------------------------------------------
+    # NIVEL 4: RESULTADO (CONSOLA)
+    # ---------------------------------------------------------
+    elif st.session_state.nivel == 4:
+        st.markdown("<div class='level-card'>", unsafe_allow_html=True)
+        st.success("🎯 **¡Misión Completada! El motor de inteligencia artificial de Colsubsidio está listo para procesar tu Score.**")
+        
+        st.markdown("### 📦 El JSON generado para la API (/perfilar)")
+        st.json(st.session_state.lead)
+        
+        if st.button("🔄 Reiniciar Aventura"):
             st.session_state.clear()
             st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
-with col_consola:
-    # --- PANEL LATERAL DE INVENTARIO Y ESTADO ---
-    st.markdown('<div class="inventory-panel">', unsafe_allow_html=True)
-    st.markdown("### 🎒 Tu Inventario")
+with col_inv:
+    # --- PANEL LATERAL DE INVENTARIO GAMIFICADO ---
+    st.markdown("<div class='inventory-panel'>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #002D72; font-weight: bold;'>🎒 Tu Mochila</h3>", unsafe_allow_html=True)
     
-    # Lógica visual para saber si completó pasos
-    identidad_ok = st.session_state.estacion_actual > 0
-    planos_ok = st.session_state.estacion_actual > 1
-    cofre_ok = st.session_state.estacion_actual > 2
-    
-    st.markdown(f"""
-    <div class="inventory-item">
-        <span>👤 <b>Identidad:</b></span>
-        <span class="{'status-badge-ok' if identidad_ok else 'status-badge-wait'}">{'Verificada' if identidad_ok else 'Pendiente'}</span>
-    </div>
-    <div class="inventory-item">
-        <span>📍 <b>Ubicación:</b></span>
-        <span class="{'status-badge-ok' if planos_ok else 'status-badge-wait'}">{st.session_state.lead['preferencias_e_intencion']['zona_interes'] if planos_ok else 'Pendiente'}</span>
-    </div>
-    <div class="inventory-item">
-        <span>🪙 <b>Ahorros Total:</b></span>
-        <span class="{'status-badge-ok' if cofre_ok else 'status-badge-wait'}">
-            ${(st.session_state.lead['datos_financieros_declarados'].get('cesantias_inmovilizadas', 0) + st.session_state.lead['datos_financieros_declarados'].get('ahorro_programado', 0)):,.0f}
-        </span>
-    </div>
-    """, unsafe_allow_html=True)
-    
+    # Progreso
+    st.progress(st.session_state.nivel / 4)
+    st.caption(f"Nivel {st.session_state.nivel} de 4")
     st.divider()
     
-    # Consola de Backend (Solo aparece al final)
-    if st.session_state.estacion_actual == 4:
-        st.markdown("### 💻 Consola Backend (JSON)")
-        st.success("JSON listo para envío POST")
-        with st.expander("Ver JSON Generado", expanded=False):
-            st.json(st.session_state.lead)
-            
-    st.markdown('</div>', unsafe_allow_html=True)
+    # Items recolectados dinámicamente
+    if st.session_state.nivel > 0:
+        afil = "✅ Afiliado" if st.session_state.lead['afiliacion_colsubsidio']['es_afiliado'] else "❌ No Afiliado"
+        st.markdown(f"**Identidad:** {afil}")
+        
+    if st.session_state.nivel > 1:
+        zona = st.session_state.lead['preferencias_e_intencion']['zona_interes']
+        st.markdown(f"**Destino:** {zona}")
+        
+    if st.session_state.nivel > 2:
+        pts = sum(st.session_state.lead['condiciones_especiales_ley'].values())
+        sisb = st.session_state.lead['informacion_socioeconomica_externa']['grupo_sisben']
+        st.markdown(f"**Poderes Extra:** {pts} activados")
+        st.markdown(f"**Sisbén:** {sisb}")
+        
+    if st.session_state.nivel > 3:
+        oro = st.session_state.lead['datos_financieros_declarados']['cesantias_inmovilizadas'] + st.session_state.lead['datos_financieros_declarados']['ahorro_programado']
+        st.markdown(f"**Oro acumulado:** ${oro:,.0f}")
+        
+        if st.session_state.lead['informacion_socioeconomica_externa']['tiene_propiedades_snr'] > 0:
+            st.error("⚠️ Infracción: Ya posee propiedades")
+
+    st.markdown("</div>", unsafe_allow_html=True)
