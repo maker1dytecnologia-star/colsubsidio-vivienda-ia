@@ -10,18 +10,22 @@ st.set_page_config(
 )
 
 # Preloaded data path (Asegúrate de que esta ruta sea la correcta en tu repo, si está en la misma carpeta usa solo el nombre del archivo)
-CSV_PATH = 'hackathon_VIVIENDAv2.xlsx_-_CV_SSS_VIV_PENETRACION_PERFIL_C.csv' 
+# Preloaded data path (Apunta directamente al archivo en la raíz del repo)
+DATA_PATH = 'hackathon_VIVIENDAv2.xlsx'
 
 @st.cache_data
 def load_data():
     try:
-        df = pd.read_csv(CSV_PATH)
+        # Se cambia read_csv por read_excel ya que el archivo es .xlsx
+        df = pd.read_excel(DATA_PATH, sheet_name=0)
+        
+        # Limpieza de formato de precio (dividir por 10,000 según documentación)
         if 'VLR_VIVIENDA' in df.columns:
-            df['VLR_VIVIENDA_CLEAN'] = df['VLR_VIVIENDA'].apply(
-                lambda x: float(str(x).replace(',', '')) / 10000 if pd.notna(x) else 0
-            )
+            # En pandas leyendo excel directo, usualmente ya es numérico, pero aseguramos
+            df['VLR_VIVIENDA_CLEAN'] = pd.to_numeric(df['VLR_VIVIENDA'], errors='coerce').fillna(0) / 10000
         else:
             df['VLR_VIVIENDA_CLEAN'] = 0
+            
         return df
     except Exception as e:
         st.error(f"Error cargando base de datos histórica: {e}. Se usarán proyectos por defecto.")
