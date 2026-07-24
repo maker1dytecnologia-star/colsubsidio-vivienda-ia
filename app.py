@@ -5,104 +5,72 @@ import json
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Colsubsidio - Asesor Digital VIS", layout="wide", initial_sidebar_state="expanded")
 
-# --- CSS PROFESIONAL Y FONDO ANIMADO CORPORATIVO ---
+# --- CSS PREMIUM SEGURO (ANIMACIÓN PURA DE CSS) ---
 st.markdown("""
 <style>
-    /* Ocultar el fondo por defecto */
+    /* 1. Fondo Animado Corporativo (Sin HTML extra) */
     .stApp {
-        background-color: transparent !important;
+        background: linear-gradient(-45deg, #ffffff, #f0f7ff, #f8fafc, #e6f2ff);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
     }
 
-    /* CONTENEDOR DE LA ANIMACIÓN DE FONDO */
-    .area {
-        background: linear-gradient(135deg, #f0f7ff 0%, #f8fafc 100%);
-        width: 100%;
-        height: 100vh;
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: -999;
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
 
-    .circles {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        margin: 0;
-        padding: 0;
-    }
-
-    .circles li {
-        position: absolute;
-        display: block;
-        list-style: none;
-        width: 20px;
-        height: 20px;
-        background: rgba(0, 103, 177, 0.1); /* Azul Colsubsidio transparente */
-        animation: animate 25s linear infinite;
-        bottom: -150px;
-    }
-
-    /* Diferentes tamaños, posiciones y colores para las figuras flotantes */
-    .circles li:nth-child(1) { left: 25%; width: 80px; height: 80px; animation-delay: 0s; }
-    .circles li:nth-child(2) { left: 10%; width: 30px; height: 30px; animation-delay: 2s; animation-duration: 12s; background: rgba(255, 208, 0, 0.15); /* Amarillo Colsubsidio */ }
-    .circles li:nth-child(3) { left: 70%; width: 25px; height: 25px; animation-delay: 4s; }
-    .circles li:nth-child(4) { left: 40%; width: 60px; height: 60px; animation-delay: 0s; animation-duration: 18s; background: rgba(255, 208, 0, 0.1); }
-    .circles li:nth-child(5) { left: 65%; width: 20px; height: 20px; animation-delay: 0s; }
-    .circles li:nth-child(6) { left: 75%; width: 110px; height: 110px; animation-delay: 3s; }
-    .circles li:nth-child(7) { left: 35%; width: 150px; height: 150px; animation-delay: 7s; background: rgba(255, 208, 0, 0.12); }
-    .circles li:nth-child(8) { left: 50%; width: 25px; height: 25px; animation-delay: 15s; animation-duration: 45s; }
-    .circles li:nth-child(9) { left: 20%; width: 15px; height: 15px; animation-delay: 2s; animation-duration: 35s; background: rgba(255, 208, 0, 0.2); }
-    .circles li:nth-child(10) { left: 85%; width: 150px; height: 150px; animation-delay: 0s; animation-duration: 11s; }
-
-    @keyframes animate {
-        0% { transform: translateY(0) rotate(0deg); opacity: 1; border-radius: 0; }
-        100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; border-radius: 50%; }
-    }
-
-    /* RESTO DE TUS ESTILOS (Cabecera, Tarjetas, Botones) */
+    /* 2. Cabecera Corporativa Inmersiva */
     .game-header { 
         background: linear-gradient(135deg, #0067b1 0%, #004d85 100%); 
-        padding: 35px; color: white; text-align: center; border-radius: 0 0 30px 30px; 
-        margin-top: -60px; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(0, 103, 177, 0.15); border-bottom: 5px solid #ffd000; 
+        padding: 35px; color: white; text-align: center; border-radius: 0 0 35px 35px; 
+        margin-top: -60px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0, 103, 177, 0.2); 
+        border-bottom: 6px solid #ffd000; position: relative; z-index: 1;
     }
-    .game-header h1 { color: #ffd000 !important; font-weight: 900; font-size: 2.6rem; letter-spacing: -0.5px; }
+    .game-header h1 { color: #ffd000 !important; font-weight: 900; font-size: 2.8rem; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-    .roadmap-container { display: flex; justify-content: space-between; align-items: center; position: relative; margin: 20px auto 40px auto; padding: 0 5%; max-width: 900px; }
+    /* 3. Mapa Visual (Roadmap) */
+    .roadmap-container { display: flex; justify-content: space-between; align-items: center; position: relative; margin: 20px auto 50px auto; padding: 0 5%; max-width: 1000px; z-index: 1; }
     .roadmap-step { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 2; width: 20%; }
-    .roadmap-icon { font-size: 2rem; background: #ffffff; border: 4px solid #cbd5e1; border-radius: 50%; width: 70px; height: 70px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.04); transition: all 0.3s ease; }
-    .step-active .roadmap-icon { border-color: #ffd000; background: #fffbeb; transform: scale(1.12); box-shadow: 0 0 15px rgba(255, 208, 0, 0.4); }
+    .roadmap-icon { font-size: 2.2rem; background: #ffffff; border: 4px solid #cbd5e1; border-radius: 50%; width: 75px; height: 75px; display: flex; justify-content: center; align-items: center; z-index: 2; transition: all 0.4s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .step-active .roadmap-icon { border-color: #ffd000; background: #fffbeb; transform: scale(1.15); box-shadow: 0 0 20px rgba(255, 208, 0, 0.5); }
     .step-done .roadmap-icon { border-color: #10b981; background: #d1fae5; color: #065f46; }
-    .step-label { font-weight: 700; margin-top: 10px; color: #575756; font-size: 0.85rem; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
-    .step-active .step-label { color: #0067b1; font-size: 0.95rem; }
-    .roadmap-line { position: absolute; top: 34px; left: 10%; right: 10%; height: 4px; background: #cbd5e1; z-index: 1; border-radius: 2px; }
+    .step-label { font-weight: 700; margin-top: 12px; color: #575756; font-size: 0.9rem; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
+    .step-active .step-label { color: #0067b1; font-size: 1rem; }
+    .roadmap-line { position: absolute; top: 37px; left: 10%; right: 10%; height: 5px; background: #cbd5e1; z-index: 1; border-radius: 3px; }
     
-    .stage-container { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border-radius: 24px; padding: 45px; text-align: center; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06); margin: 0 auto 40px auto; max-width: 850px; border: 1px solid rgba(255,255,255,0.5); }
-    .house-graphic { font-size: 100px; line-height: 1; margin-bottom: 25px; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.08)); }
+    /* 4. Tarjetas Estilo Glassmorphism (Cristal) */
+    .stage-container { 
+        background: rgba(255, 255, 255, 0.75); 
+        backdrop-filter: blur(15px); 
+        -webkit-backdrop-filter: blur(15px);
+        border-radius: 25px; 
+        padding: 45px; 
+        text-align: center; 
+        box-shadow: 0 15px 35px rgba(0, 103, 177, 0.1); 
+        margin: 0 auto 40px auto; 
+        border: 1px solid rgba(255, 255, 255, 1); 
+        max-width: 900px; 
+        position: relative; z-index: 1; 
+    }
+    .house-graphic { font-size: 100px; line-height: 1; margin-bottom: 25px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1)); }
     
-    .narrative-box { background: #f0f7ff; border-left: 6px solid #0067b1; padding: 22px 30px; border-radius: 0 14px 14px 0; text-align: left; margin: 0 auto 30px auto; font-size: 1.1rem; color: #575756; line-height: 1.6; }
-    .narrative-title { font-weight: 800; color: #0067b1; margin-bottom: 8px; font-size: 1.25rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    /* 5. Cajas de Narrativa */
+    .narrative-box { background: #ffffff; border-left: 6px solid #0067b1; padding: 25px 30px; border-radius: 0 16px 16px 0; text-align: left; margin: 0 auto 35px auto; font-size: 1.15rem; color: #575756; line-height: 1.7; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+    .narrative-title { font-weight: 900; color: #0067b1; margin-bottom: 12px; font-size: 1.35rem; text-transform: uppercase; }
     
-    .stButton > button { background-color: #0067b1 !important; color: white !important; font-weight: 700; border-radius: 12px; border: none; padding: 0.6rem 1.5rem; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0, 103, 177, 0.2); }
-    .stButton > button:hover { background-color: #004d85 !important; transform: translateY(-1px); box-shadow: 0 6px 12px rgba(0, 103, 177, 0.3); }
+    /* 6. Botones Interactivos */
+    .stButton > button { background-color: #0067b1 !important; color: white !important; font-weight: 800; border-radius: 12px; border: none; padding: 0.6rem 1.5rem; transition: all 0.3s; box-shadow: 0 4px 10px rgba(0, 103, 177, 0.25); }
+    .stButton > button:hover { background-color: #004d85 !important; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0, 103, 177, 0.4); }
     
+    /* 7. Ocultar labels extra y pulir inputs */
     .stSlider > label, .stNumberInput > label, .stRadio > label, .stSelectbox > label { display: none; }
     div.row-widget.stRadio > div { flex-direction: row; flex-wrap: wrap; gap: 12px; justify-content: center; }
-    div.row-widget.stRadio > div > label { background: #ffffff; padding: 12px 24px; border-radius: 30px; border: 2px solid #cbd5e1; font-weight: 600; color: #575756; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    div.row-widget.stRadio > div > label { background: white; padding: 12px 25px; border-radius: 30px; border: 2px solid #cbd5e1; font-weight: 700; color: #575756; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
     div.row-widget.stRadio > div > label:hover { border-color: #0067b1; color: #0067b1; background: #f0f7ff; }
-    
-    [data-testid="stSidebar"] { background-color: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-right: 1px solid #e2e8f0; }
+    [data-testid="stSidebar"] { background-color: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-right: 1px solid #e2e8f0; }
 </style>
-
-<!-- ESTRUCTURA HTML PARA EL FONDO ANIMADO -->
-<div class="area">
-    <ul class="circles">
-        <li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li>
-    </ul>
-</div>
 """, unsafe_allow_html=True)
 
 # --- CONFIGURACIÓN DE API Y MODO SEGURO ---
@@ -167,7 +135,7 @@ if 'api_response' not in st.session_state: st.session_state.api_response = None
 
 # --- PANEL LATERAL ---
 with st.sidebar:
-    st.markdown("<h2 style='color: #0067b1; text-align: center; margin-bottom: 20px; font-weight: 800;'>🎒 Tu Mochila VIS</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color: #0067b1; text-align: center; margin-bottom: 20px; font-weight: 900;'>🎒 Tu Mochila VIS</h2>", unsafe_allow_html=True)
     st.progress(st.session_state.nivel / 4)
     st.caption(f"Progreso actual: Nivel {st.session_state.nivel} de 4")
     st.divider()
@@ -183,7 +151,7 @@ with st.sidebar:
         st.markdown(f"**Cofre de Ahorros:**<br>💰 ${oro:,.0f}", unsafe_allow_html=True)
 
 # --- CABECERA ---
-st.markdown("<div class='game-header'><h1>🏠 El Camino hacia tu Casa Propia</h1><p style='color: #ffd000; font-size: 1.1rem; margin-top: 5px; font-weight: 600;'>Asesor Digital Inteligente — Colsubsidio</p></div>", unsafe_allow_html=True)
+st.markdown("<div class='game-header'><h1>🏠 El Camino hacia tu Casa Propia</h1><p style='color: #ffffff; font-size: 1.1rem; margin-top: 5px; font-weight: 500;'>Asesor Digital Inteligente — Colsubsidio</p></div>", unsafe_allow_html=True)
 
 # --- MAPA VISUAL ---
 etapas = [("🔐", "Identidad"), ("📐", "Planos"), ("🧱", "Cimientos"), ("🏗️", "Estructura"), ("🔑", "La Llave")]
@@ -206,9 +174,9 @@ with st.container():
         with c2:
             cedula = st.text_input("Documento", placeholder="Escribe tu cédula (Prueba con 1018300400)...", key="input_cedula")
             st.write("")
-            if st.button("🔍 Consultar Cédula", use_container_width=True, key="btn_nivel_0"):
+            if st.button("🔍 Consultar Cédula", use_container_width=True, key="btn_consulta_cedula"):
                 if cedula:
-                    with st.spinner("Consultando registros..."):
+                    with st.spinner("Consultando registros seguros..."):
                         datos_api = api_get_afiliado(cedula)
                         st.session_state.lead = get_empty_lead(cedula)
                         
@@ -249,7 +217,7 @@ with st.container():
         zona = st.radio("Zona", ["Soacha", "Bogotá", "Tocancipá", "Girardot"])
         
         st.write("")
-        if st.button("✅ Aprobar Planos", use_container_width=True, key="btn_nivel_1"):
+        if st.button("✅ Aprobar Planos", use_container_width=True, key="btn_aprobar_planos"):
             st.session_state.lead['edad'] = int(edad)
             st.session_state.lead['zona_preferida'] = str(zona)
             st.session_state.nivel = 2
@@ -266,7 +234,7 @@ with st.container():
         ahorros = c2.number_input("Ahorros (COP):", min_value=0.0, step=500000.0, value=2000000.0)
         
         st.write("")
-        if st.button("💪 Cimientos Listos", use_container_width=True, key="btn_nivel_2"):
+        if st.button("💪 Cimientos Listos", use_container_width=True, key="btn_cimientos"):
             st.session_state.lead['finanzas']['cesantias'] = float(cesantias)
             st.session_state.lead['finanzas']['ahorros'] = float(ahorros)
             st.session_state.nivel = 3
@@ -283,12 +251,12 @@ with st.container():
         propiedades = st.toggle("🚫 ¿Ya posee propiedad raíz a su nombre?")
         
         st.write("")
-        if st.button("🔨 Finalizar y Evaluar Perfil", use_container_width=True, key="btn_nivel_3"):
+        if st.button("🔨 Finalizar y Evaluar Perfil", use_container_width=True, key="btn_evaluar_perfil"):
             st.session_state.lead['condiciones_especiales']['cabeza_de_hogar'] = bool(cabeza)
             st.session_state.lead['finanzas']['credito_preaprobado'] = bool(cred_aprobado)
             st.session_state.lead['propietario_vivienda'] = bool(propiedades)
             
-            with st.spinner("Procesando motor de reglas..."):
+            with st.spinner("Procesando motor de IA y reglas de negocio..."):
                 st.session_state.api_response = api_post_perfilar(st.session_state.lead)
                 
             st.session_state.nivel = 4
@@ -302,19 +270,19 @@ with st.container():
         res = st.session_state.api_response
         
         if res and "error" not in res:
-            st.markdown(f"<div class='narrative-box' style='background:#d1fae5; color:#065f46; border-left-color:#10b981;'><div class='narrative-title' style='color:#065f46;'>¡Perfilamiento Exitoso!</div>{res.get('ai_summary', 'Proceso completado.')}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='narrative-box' style='border-left-color:#10b981;'><div class='narrative-title' style='color:#065f46;'>¡Perfilamiento Exitoso!</div>{res.get('ai_summary', 'Proceso completado.')}</div>", unsafe_allow_html=True)
             
             st.markdown("### 🎯 Proyecto Recomendado")
             for proj in res.get("matching_projects", []):
                 st.success(f"**{proj['proyecto']}** ({proj['municipio']}) - Match: {proj['match_score']}% | Precio: ${proj['precio']:,.0f}")
                 st.caption(proj['motivo'])
                 
-            st.markdown("### 🎒 Mochila de Radicación (Documentos Oficiales)")
+            st.markdown("### 🎒 Mochila de Radicación Oficial")
             st.link_button("📝 Descargar Formulario de Postulación", "https://www.colsubsidio.com/hubfs/documentos/colsubsidio/formulario-postulacion-subsidio-vivienda-colsubsidio-radicacion-digital.pdf", use_container_width=True)
             
         else:
             st.markdown("""
-            <div class='narrative-box' style='background:#fef3c7; color:#92400E; border-left-color:#f59e0b;'>
+            <div class='narrative-box' style='border-left-color:#f59e0b;'>
                 <div class='narrative-title' style='color:#b45309;'>Programa de Acompañamiento PerteneSer</div>
                 Te invitamos a conocer nuestros canales de ahorro y Subsidio de Arrendamiento Colsubsidio.
             </div>
@@ -327,7 +295,6 @@ with st.container():
             st.json(res)
             
         st.write("")
-        # LLAVE ÚNICA AÑADIDA PARA EVITAR EL DUPLICATE ELEMENT ID
         if st.button("🔄 Reiniciar Aventura", use_container_width=True, key="btn_reiniciar_final"):
             st.session_state.clear()
             st.rerun()
