@@ -87,14 +87,15 @@ HEADERS = {
 }
 
 def api_get_afiliado(cedula):
+    """Consulta real al endpoint GET /afiliados/{id_usuario} con manejo seguro de errores"""
     try:
         url = f"{BASE_URL}/afiliados/{cedula}"
         response = requests.get(url, headers=HEADERS, timeout=5)
         if response.status_code == 200:
             return response.json()
-        return None
+        return {"afiliado": False}
     except Exception:
-        return None
+        return {"afiliado": False}
 
 def api_post_perfilar(payload):
     try:
@@ -171,7 +172,7 @@ st.markdown(mapa_html, unsafe_allow_html=True)
 # --- FLUJO DE JUEGO ---
 with st.container():
     
-    # NIVEL 0: IDENTIFICACIÓN (GET API)
+    # NIVEL 0: IDENTIFICACIÓN (GET API BLINDADO)
     if st.session_state.nivel == 0:
         st.markdown("<div class='stage-container'><div class='house-graphic'>🏕️</div>", unsafe_allow_html=True)
         st.markdown("""
@@ -191,8 +192,13 @@ with st.container():
                         datos_api = api_get_afiliado(cedula)
                         st.session_state.lead = get_empty_lead(cedula)
                         
-                        if datos_api and datos_api.get("afiliado"):
-                            info = datos_api.get("datos", {})
+                        # Validación segura usando .get() para evitar KeyErrors
+                        es_afil = False
+                        if isinstance(datos_api, dict):
+                            es_afil = datos_api.get("afiliado", False) or ("datos" in datos_api and datos_api.get("datos") is not None)
+                        
+                        if es_afil:
+                            info = datos_api.get("datos", datos_api) if isinstance(datos_api, dict) else {}
                             st.session_state.lead['afiliado'] = True
                             st.session_state.lead['nombre'] = info.get("nombre", "Afiliado")
                             st.session_state.lead['personas_a_cargo'] = info.get("personas_a_cargo", 0)
@@ -200,7 +206,7 @@ with st.container():
                             st.session_state.lead['antiguedad_meses'] = info.get("antiguedad_meses", 12)
                             st.success("¡Afiliación encontrada en línea con éxito!")
                         else:
-                            st.info("No se encontró afiliación activa. Continuaremos el proceso como usuario independiente.")
+                            st.info("No se encontró afiliación activa en el servidor. Continuaremos el proceso como usuario independiente.")
                             
                         st.session_state.nivel = 1
                         st.rerun()
